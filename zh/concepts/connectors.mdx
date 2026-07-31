@@ -6,21 +6,25 @@ description: "Octop 连接器为您的专家添加基于 OAuth 认证的应用�
 
 连接器为 Octop 专家扩展了访问外部服务和工具的能力。Octop 支持两类连接器：**OAuth 应用连接器**和**MCP 网关连接器**。
 
+<Frame>
+  ![Connectors](/images/connectors.png "Connectors")
+</Frame>
+
 ## OAuth 应用连接器
 
 OAuth 应用连接器让专家能够以您的身份访问第三方服务（如 Google Workspace、GitHub 等）。您需要先完成一次 OAuth 授权流程，之后专家便可在您授权的范围内调用该服务的 API。
 
-```bash
-octop connector oauth add --provider google --agent my-agent
-```
+<Frame>
+  ![Oauth Connectors](/images/oauth-connectors.png "Oauth Connectors")
+</Frame>
 
 ## MCP 网关连接器
 
 MCP（Model Context Protocol）网关连接器让专家能够连接到任意兼容 MCP 的服务器，从而获得该服务器暴露的全部工具和资源。这是扩展专家能力最灵活的方式，因为它兼容不断增长的 MCP 生态。
 
-```bash
-octop connector mcp add --url https://your-mcp-server.example.com --agent my-agent
-```
+<Frame>
+  ![Mcp Connectors](/images/mcp-connectors.jpg "Mcp Connectors")
+</Frame>
 
 <Note>
   一个专家可以同时连接多个连接器。连接器授予的权限仅对绑定的专家生效，不会影响您账户下的其他专家。

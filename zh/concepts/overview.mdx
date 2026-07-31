@@ -1,7 +1,7 @@
 ---
 title: "Octop 如何运作：架构概览"
 sidebarTitle: "概览"
-description: "了解 Octop 的单进程模型：一个服务器同时运行 Web 仪表盘、CLI、IM 渠道和定时任务，共享同一个数据库。"
+description: "了解 Octop 的单进程模型：一个服务器同时运行 Web 界面、CLI、IM 渠道和定时任务，共享同一个数据库。"
 ---
 
 Octop 采用单进程架构。一个 Python 进程同时承载 Web 仪表盘、REST/WebSocket API、IM 渠道监听器和定时任务调度器——所有功能共享同一个 SQLite 数据库和同一套配置。

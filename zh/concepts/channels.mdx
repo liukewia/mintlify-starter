@@ -1,10 +1,14 @@
 ---
-title: "IM 渠道：将 Octop 连接到您的消息应用"
-sidebarTitle: "渠道"
+title: "通道：将 Octop 连接到您的消息应用"
+sidebarTitle: "通道"
 description: "Octop 支持飞书、钉钉、QQ、Discord、企业微信等。每个渠道将一个 IM 平台连接到您的某个专家。"
 ---
 
 渠道是 Octop 专家与即时通讯平台之间的桥梁。每个渠道连接一个特定的 IM 平台账户（如一个飞书机器人或一个 Discord Bot）到您的某一个专家，让您可以直接在熟悉的聊天应用中与专家对话。
+
+<Frame>
+  ![Channels](/images/channels.png "Channels")
+</Frame>
 
 ## 支持的平台
 
@@ -12,7 +16,7 @@ description: "Octop 支持飞书、钉钉、QQ、Discord、企业微信等。每
 - 钉钉
 - QQ
 - Discord
-- 企业微信
+- 企业微信等
 
 ## 渠道的工作方式
 
@@ -23,10 +27,6 @@ description: "Octop 支持飞书、钉钉、QQ、Discord、企业微信等。每
 - 消息路由规则（例如仅响应私聊，或响应特定群组）
 
 添加渠道后，来自该 IM 平台的消息会被路由到绑定的专家，专家的回复也会通过同一渠道发送回去。
-
-```bash
-octop channel add --platform feishu --agent my-agent
-```
 
 <Tip>
   关于每个平台的详细接入步骤（获取凭据、配置回调地址等），请参阅[设置 IM 渠道指南](/zh/guides/im-channels)。
