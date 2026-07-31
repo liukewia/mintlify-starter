@@ -1,0 +1,78 @@
+---
+title: 'How to Back Up and Completely Restore Your Octop Data'
+sidebarTitle: 'Backup & Restore'
+description: 'Export a full Octop backup including the SQLite database, agent workspaces, and config file. Restore everything on any machine running Octop.'
+---
+
+Octop's backup command exports everything — the SQLite database, agent workspaces, and config — into a single archive you can restore on any machine running Octop. Use backups before upgrades, migrations, or as part of a regular maintenance routine.
+
+## What gets backed up
+
+| Item | Path | Notes |
+|------|------|-------|
+| Database | `~/.octop/octop.db` | All users, agents, channels, cron jobs, and conversations |
+| Agent workspaces | `~/.octop/agents/` | Per-agent files, SOUL.md, skills, and memory |
+| Config | `~/.octop/config.json` | Server settings and feature flags |
+| Secrets | `~/.octop/secrets/` | JWT secret and channel tokens (included optionally) |
+
+## Create a backup
+
+<CodeGroup>
+```bash Create a backup archive
+octop backup create
+# Output: octop-backup-2025-01-15.tar.gz (or similar timestamped filename)
+```
+</CodeGroup>
+
+The archive is written to your current working directory. Move it to a safe location — external storage, a cloud bucket, or another machine.
+
+## Restore a backup
+
+<CodeGroup>
+```bash Restore from an archive
+octop backup restore octop-backup-2025-01-15.tar.gz
+```
+</CodeGroup>
+
+<Warning>
+  Restoring overwrites the entire `~/.octop/` directory. Before you run `octop backup restore`, create a fresh backup of the current state so you can roll back if needed:
+
+  ```bash
+  octop backup create   # save current state first
+  octop backup restore octop-backup-2025-01-15.tar.gz
+  ```
+</Warning>
+
+## Back up a Docker deployment
+
+If you run Octop in Docker, the data lives in the mounted volume (typically `octop-data:/data/.octop`). Two approaches work well:
+
+1. **Run the backup command inside the container:**
+   ```bash
+   docker exec <container_name> octop backup create
+   ```
+   Then copy the archive out with `docker cp`.
+
+2. **Copy the volume directory directly** from the host (when the container is stopped) using standard filesystem tools.
+
+## Keep Octop up to date
+
+<CodeGroup>
+```bash Check and install the latest version
+octop update
+```
+
+```bash Check for updates without installing
+octop update --check
+```
+</CodeGroup>
+
+<Tip>
+  Schedule regular backups with a host-level cron job so you always have a recent snapshot. For example, add the following to your system crontab to back up every day at 2 AM:
+
+  ```bash
+  0 2 * * * /path/to/octop backup create
+  ```
+
+  Pair this with a rotation script to avoid accumulating too many archives.
+</Tip>

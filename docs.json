@@ -1,0 +1,195 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Octop",
+  "theme": "almond",
+  "logo": {
+    "light": "/images/logo_name.png",
+    "dark": "/images/logo_name_dark.png"
+  },
+  "favicon": {
+    "light": "/images/favico.svg",
+    "dark": "/images/favico.svg"
+  },
+  "colors": {
+    "primary": "#eb6a57",
+    "light": "#e1e1e1"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/TencentCloud/Octop"
+    },
+    "links": []
+  },
+  "navigation": {
+    "languages": [
+      {
+        "language": "en",
+        "tabs": [
+          {
+            "tab": "Docs",
+            "groups": [
+              {
+                "group": "Get Started",
+                "pages": [
+                  "introduction",
+                  "quickstart",
+                  "quickstart-docker"
+                ]
+              },
+              {
+                "group": "Core Concepts",
+                "pages": [
+                  "concepts/overview",
+                  "concepts/agents",
+                  "concepts/experts-personas",
+                  "concepts/channels",
+                  "concepts/connectors"
+                ]
+              },
+              {
+                "group": "Guides",
+                "pages": [
+                  "guides/llm-providers",
+                  "guides/im-channels",
+                  "guides/cron-jobs",
+                  "guides/acp-ide",
+                  "guides/browser-terminal",
+                  "guides/backup-restore"
+                ]
+              },
+              {
+                "group": "Configuration",
+                "pages": [
+                  "configuration/config-file",
+                  "configuration/environment-variables",
+                  "configuration/tls-service",
+                  "configuration/data-directory"
+                ]
+              },
+              {
+                "group": "CLI Reference",
+                "pages": [
+                  "cli/overview",
+                  "cli/server-commands",
+                  "cli/agent-commands",
+                  "cli/channel-cron-commands"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API Reference",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": [
+                  "api/overview",
+                  "api/authentication"
+                ]
+              },
+              {
+                "group": "Endpoints",
+                "pages": [
+                  "api/agents",
+                  "api/chat",
+                  "api/channels",
+                  "api/providers",
+                  "api/cron",
+                  "api/users-admin"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "zh",
+        "tabs": [
+          {
+            "tab": "文档",
+            "groups": [
+              {
+                "group": "开始使用",
+                "pages": [
+                  "zh/introduction",
+                  "zh/quickstart",
+                  "zh/quickstart-docker"
+                ]
+              },
+              {
+                "group": "核心概念",
+                "pages": [
+                  "zh/concepts/overview",
+                  "zh/concepts/agents",
+                  "zh/concepts/experts-personas",
+                  "zh/concepts/channels",
+                  "zh/concepts/connectors"
+                ]
+              },
+              {
+                "group": "指南",
+                "pages": [
+                  "zh/guides/llm-providers",
+                  "zh/guides/im-channels",
+                  "zh/guides/cron-jobs",
+                  "zh/guides/acp-ide",
+                  "zh/guides/browser-terminal",
+                  "zh/guides/backup-restore"
+                ]
+              },
+              {
+                "group": "配置",
+                "pages": [
+                  "zh/configuration/config-file",
+                  "zh/configuration/environment-variables",
+                  "zh/configuration/tls-service",
+                  "zh/configuration/data-directory"
+                ]
+              },
+              {
+                "group": "CLI 参考",
+                "pages": [
+                  "zh/cli/overview",
+                  "zh/cli/server-commands",
+                  "zh/cli/agent-commands",
+                  "zh/cli/channel-cron-commands"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API 参考",
+            "groups": [
+              {
+                "group": "概览",
+                "pages": [
+                  "zh/api/overview",
+                  "zh/api/authentication"
+                ]
+              },
+              {
+                "group": "端点",
+                "pages": [
+                  "zh/api/agents",
+                  "zh/api/chat",
+                  "zh/api/channels",
+                  "zh/api/providers",
+                  "zh/api/cron",
+                  "zh/api/users-admin"
+                ]
+              }
+            ]
+          }
+        ],
+        "default": true
+      }
+    ]
+  },
+  "icons": {
+    "library": "fontawesome"
+  },
+  "background": {
+    "decoration": "gradient"
+  }
+}

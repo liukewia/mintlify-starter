@@ -1,0 +1,31 @@
+---
+title: "连接器：用 OAuth 和 MCP 扩展智能体"
+sidebarTitle: "连接器"
+description: "Octop 连接器为您的智能体添加基于 OAuth 认证的应用和 MCP 网关，使其能够访问外部服务和工具。"
+---
+
+连接器为 Octop 智能体扩展了访问外部服务和工具的能力。Octop 支持两类连接器：**OAuth 应用连接器**和**MCP 网关连接器**。
+
+## OAuth 应用连接器
+
+OAuth 应用连接器让智能体能够以您的身份访问第三方服务（如 Google Workspace、GitHub 等）。您需要先完成一次 OAuth 授权流程，之后智能体便可在您授权的范围内调用该服务的 API。
+
+```bash
+octop connector oauth add --provider google --agent my-agent
+```
+
+## MCP 网关连接器
+
+MCP（Model Context Protocol）网关连接器让智能体能够连接到任意兼容 MCP 的服务器，从而获得该服务器暴露的全部工具和资源。这是扩展智能体能力最灵活的方式，因为它兼容不断增长的 MCP 生态。
+
+```bash
+octop connector mcp add --url https://your-mcp-server.example.com --agent my-agent
+```
+
+<Note>
+  一个智能体可以同时连接多个连接器。连接器授予的权限仅对绑定的智能体生效，不会影响您账户下的其他智能体。
+</Note>
+
+<Tip>
+  如果您需要为智能体添加自定义工具而生态中没有现成的 MCP 服务器，可以搭建自己的 MCP 服务器并通过网关连接器接入。
+</Tip>

@@ -1,0 +1,216 @@
+---
+title: 'Octop CLI: Channel, Cron, Plugin, and Admin Commands'
+sidebarTitle: 'Channels & Cron'
+description: 'Configure IM channels, schedule recurring cron jobs, install and reload plugins, and run admin operations from the Octop command line.'
+---
+
+The CLI covers channel setup, cron scheduling, plugin management, and admin tasks alongside the web dashboard. Use these commands to wire up IM platforms, automate recurring prompts, extend Octop with plugins, and administer users — all from the terminal.
+
+## `octop channel`
+
+Create and manage IM channel connections for an agent. Most subcommands work offline; `test` requires a running server.
+
+<CodeGroup>
+```bash List channels for an agent
+octop channel list --agent main
+```
+```bash Show one channel row
+octop channel get --agent main <id>
+```
+```bash Create a channel interactively
+octop channel create --agent main
+```
+```bash Update a channel's configuration
+octop channel patch --agent main <id>
+```
+```bash Delete a channel
+octop channel delete --agent main <id>
+```
+```bash Test a channel (instantiate → start → stop)
+octop channel test --agent main <id>
+```
+```bash Edit channel config offline
+octop channel config --agent main <id>
+```
+```bash Guided Feishu bot setup wizard
+octop channel feishu-setup
+```
+```bash QR login for WeCom or Weixin group binding
+octop channel bind
+```
+</CodeGroup>
+
+### Subcommands
+
+| Subcommand | Description |
+|---|---|
+| `list` | List all channels configured for an agent |
+| `get` | Show the full configuration row for one channel |
+| `create` | Create a new channel (interactive) |
+| `patch` | Update an existing channel's configuration |
+| `delete` | Remove a channel |
+| `test` | Instantiate the channel, start it, and stop it (requires running server) |
+| `config` | Edit channel config offline |
+| `feishu-setup` | Walk through the Feishu bot-creator flow step by step |
+| `bind` | QR-code group binding for WeCom and Weixin |
+
+---
+
+## `octop cron`
+
+Schedule recurring tasks that trigger agent prompts automatically. `run-now` requires a running server; all other subcommands work offline.
+
+<CodeGroup>
+```bash List cron jobs for an agent
+octop cron list --agent main
+```
+```bash Create a cron job
+octop cron create --agent main --trigger '0 9 * * *' --prompt 'Morning briefing'
+```
+```bash Delete a cron job
+octop cron delete --agent main <job_id>
+```
+```bash Trigger a job immediately
+octop cron run-now --agent main <job_id>
+```
+</CodeGroup>
+
+### Trigger formats
+
+Pass any of the following values to `--trigger`:
+
+| Format | Example | Description |
+|---|---|---|
+| Cron expression | `0 9 * * *` | Standard five-field cron (minute hour day month weekday) |
+| Interval | `interval:3600` | Fire every N seconds |
+| One-shot date | `date:2025-12-31T09:00:00` | Fire once at an ISO 8601 datetime |
+
+### Task type flag
+
+| `--task-type` value | Behaviour |
+|---|---|
+| `agent` *(default)* | The LLM processes the prompt and pushes its reply |
+| `text` | The prompt text is pushed verbatim, bypassing the LLM |
+
+<Note>
+  `--prompt` is required and must be between 1 and 2000 characters. `octop cron run-now` dispatches the job through the scheduler and therefore requires an active `octop run` process.
+</Note>
+
+---
+
+## `octop plugin`
+
+Install and manage third-party plugins. Plugins are dropped into `~/.octop/plugins/` and power the same plugin system used by the web dashboard.
+
+<CodeGroup>
+```bash List installed plugins
+octop plugin list
+```
+```bash Install from a local path
+octop plugin install ./my-plugin
+```
+```bash Install from a Git repository
+octop plugin install https://github.com/user/plugin.git
+```
+```bash Uninstall a plugin
+octop plugin uninstall <name>
+```
+```bash Reload all plugins without restarting the server
+octop plugin reload
+```
+</CodeGroup>
+
+### Subcommands
+
+| Subcommand | Description |
+|---|---|
+| `list` | List all installed plugins |
+| `install` | Install a plugin from a local path or Git URL |
+| `uninstall` | Remove an installed plugin |
+| `reload` | Reload all plugins without restarting the server |
+
+<Tip>
+  Use `octop plugin reload` after installing or updating a plugin to apply changes to a running server without a full restart.
+</Tip>
+
+---
+
+## `octop user`
+
+Manage users in the local database. All subcommands except `login` work offline.
+
+<CodeGroup>
+```bash List all users
+octop user list
+```
+```bash Create a user
+octop user create --username bob --password secret
+```
+```bash Set a user's role
+octop user role --username bob --role admin
+```
+```bash Reset a user's password
+octop user passwd --username bob
+```
+```bash Disable a user
+octop user disable --username bob
+```
+```bash Delete a user
+octop user delete --username bob
+```
+</CodeGroup>
+
+See [Server Commands](/cli/server-commands#octop-user-login) for details on `octop user login`, which attaches the CLI to a running server.
+
+---
+
+## `octop admin`
+
+Inspect system state, review the audit log, manage global providers, and perform administrative operations directly against the local database.
+
+<CodeGroup>
+```bash Show admin overview (user count, agent state)
+octop admin overview
+```
+```bash Show audit log entries
+octop admin audit
+```
+```bash Show global (admin) providers
+octop admin providers
+```
+```bash Rotate the JWT secret
+octop admin rotate-jwt-secret
+```
+</CodeGroup>
+
+### Subcommands
+
+| Subcommand | Description |
+|---|---|
+| `overview` | Show admin overview (user count, agent state distribution) |
+| `audit` | Show audit log entries |
+| `providers` | List and manage global (admin) providers |
+| `rotate-jwt-secret` | Rotate the JWT secret directly via the local database |
+
+<Warning>
+  `octop admin rotate-jwt-secret` writes a new JWT secret directly to the SQLite database. This **immediately invalidates all active sessions** — every logged-in user, including dashboard sessions and CLI tokens, will be signed out. Use this command intentionally, not routinely.
+</Warning>
+
+---
+
+## `octop backup`
+
+Export and restore the full Octop state (database, workspaces, and configuration). All subcommands work fully offline.
+
+<CodeGroup>
+```bash Create a backup archive
+octop backup create
+```
+```bash Restore from a backup archive
+octop backup restore <archive>
+```
+</CodeGroup>
+
+<Note>
+  Backups include the SQLite database, per-agent workspaces, and configuration files. Store backup archives in a secure, off-machine location. To automate backups, schedule `octop backup create` as a system cron job or use `octop cron create` to trigger it through the agent scheduler.
+</Note>

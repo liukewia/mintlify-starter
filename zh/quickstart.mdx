@@ -1,0 +1,156 @@
+---
+title: "Octop 快速入门：几分钟内完成安装与运行"
+sidebarTitle: "快速开始"
+description: "在 macOS、Linux 或 Windows 上安装 Octop，运行 octop init 创建本地数据库和管理员账户，然后在几分钟内开始聊天。"
+---
+
+Octop 是一个自托管的多用户 AI 助手平台，完全运行在您自己的机器上。在本指南中，您将安装 `octop` CLI，初始化本地数据库和管理员账户，启动服务器，并发送第一条消息——整个过程不到五分钟。
+
+<Steps>
+  <Step title="安装 Octop">
+    选择适合您平台的安装方式。每种方法都会在 `~/.octop/venv` 处配置一个隔离环境，并通过 `~/.octop/bin` 将 `octop` 添加到您的 PATH 中——无需系统 Python。
+
+    <CodeGroup>
+
+    ```bash macOS / Linux
+    curl -fsSL https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.sh | bash
+    ```
+
+    ```powershell Windows (PowerShell)
+    irm https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.ps1 | iex
+    ```
+
+    ```bat Windows (cmd)
+    curl -fsSL https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.bat -o install.bat
+    install.bat
+    ```
+
+    ```bash PyPI（已有 Python 环境）
+    pip install octop
+    ```
+
+    </CodeGroup>
+  </Step>
+  <Step title="重新加载 shell">
+    打开**新的终端**，或重新加载当前 shell 会话，以便 PATH 能够识别 `~/.octop/bin`：
+
+    <CodeGroup>
+
+    ```bash Zsh
+    source ~/.zshrc
+    ```
+
+    ```bash Bash
+    source ~/.bashrc
+    ```
+
+    </CodeGroup>
+
+    <Note>
+      在 Windows 上，安装程序会自动更新用户 PATH——关闭并重新打开终端以使更改生效。无需执行 shell 重载命令。
+    </Note>
+
+    确认安装成功：
+
+    ```bash
+    octop --version
+    ```
+  </Step>
+  <Step title="初始化 Octop">
+    运行交互式设置向导来引导配置您的本地环境：
+
+    ```bash
+    octop init
+    ```
+
+    该向导会引导您完成三个步骤：
+
+    1. **数据库** — 在 `~/.octop/octop.db` 处创建 SQLite 数据库。
+    2. **JWT 密钥** — 在 `~/.octop/secrets/jwt_secret` 处生成 32 字节随机密钥。
+    3. **管理员账户** — 提示您为第一位管理员设置用户名和密码。
+
+    所有数据都保留在您机器的 `~/.octop/` 目录下。
+  </Step>
+  <Step title="启动服务器">
+    在前台启动 Octop：
+
+    ```bash
+    octop run
+    ```
+
+    看到服务器就绪消息后，打开浏览器并访问：
+
+    ```text
+    http://127.0.0.1:8088
+    ```
+
+    使用默认凭证登录：
+
+    | 字段 | 默认值 |
+    | --- | --- |
+    | 用户名 | `admin` |
+    | 密码 | `octop` |
+
+    <Warning>
+      首次登录后请立即更改默认密码。在仪表板的**设置 → 安全**中进行更新。
+    </Warning>
+
+    如需绑定所有网络接口或使用不同端口，直接传递参数即可：
+
+    ```bash
+    octop run --host 0.0.0.0 --port 9000
+    ```
+
+    如需将 Octop 作为持久后台服务运行（systemd、launchd 或 Windows Service），请使用：
+
+    ```bash
+    octop service start
+    ```
+  </Step>
+  <Step title="配置模型提供商">
+    Octop 支持 OpenAI 兼容 API、DashScope（通义千问）、Ollama 等。通过 CLI 或仪表板添加您的第一个提供商。
+
+    <CodeGroup>
+
+    ```bash CLI
+    octop models config
+    ```
+
+    ```text 仪表板
+    设置 → 提供商 → 添加提供商
+    ```
+
+    </CodeGroup>
+
+    选择一个提供商预设，输入您的 API 密钥并保存。该提供商将可供您账户下创建的所有智能体使用。
+  </Step>
+  <Step title="开始聊天">
+    打开 Web 仪表板的**聊天**部分，地址为 `http://127.0.0.1:8088`。选择您的智能体（`octop init` 会创建一个默认的 `main` 智能体）并发送第一条消息。
+
+    您也可以直接从终端开始对话：
+
+    ```bash
+    octop chat
+    ```
+
+    从现在开始，您的智能体将能够使用您配置的所有技能、连接器和工具。
+  </Step>
+</Steps>
+
+<Note>
+  基础安装程序会设置核心平台。如需解锁额外功能，请使用 `--extras` 参数重新运行安装程序：
+
+  ```bash
+  # 浏览器自动化（Playwright Chromium）
+  curl -fsSL https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.sh | bash -s -- --extras browser
+  
+  # 飞书渠道支持
+  curl -fsSL https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.sh | bash -s -- --extras channels-feishu
+  ```
+
+  浏览器自动化支持无头 Chromium 会话，用于网页任务和截图。飞书扩展添加了一个渠道桥接，让您的智能体能够接收和回复飞书消息。
+</Note>
+
+<Tip>
+  对于生产部署或多用户环境，请使用 Docker Compose 而非裸机安装。请参阅 [Docker 部署指南](/zh/quickstart-docker)，通过单个 `docker compose` 命令让 Octop 运行起来，支持持久化卷和便捷的环境变量配置。
+</Tip>

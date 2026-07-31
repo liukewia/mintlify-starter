@@ -1,0 +1,46 @@
+---
+title: "Octop 数据目录：~/.octop/ 中的文件与文件夹"
+sidebarTitle: "数据目录"
+description: "Octop 存储的所有内容——数据库、智能体工作区、密钥、日志和插件——都位于 ~/.octop/ 下。了解每个文件和文件夹的作用。"
+---
+
+Octop 存储的一切——数据库、智能体工作区、密钥、日志和插件——都位于 `~/.octop/` 下。了解每个文件和文件夹的作用。
+
+## 目录结构
+
+```text
+~/.octop/
+├── octop.db              # 主 SQLite 数据库
+├── config.json           # 服务器配置
+├── venv/                 # 隔离的 Python 环境
+├── bin/                  # octop CLI 可执行文件
+├── secrets/
+│   └── jwt_secret        # 32 字节随机 JWT 密钥
+├── agents/
+│   └── <agent-name>/     # 每个智能体的工作区
+├── logs/
+│   └── octop.log         # 服务器日志
+└── plugins/
+    └── <plugin-name>/    # 已安装的插件
+```
+
+## 字段详解
+
+| 路径 | 描述 |
+| --- | --- |
+| `octop.db` | 存储用户、智能体、渠道、对话历史和定时任务的主数据库 |
+| `config.json` | 服务器级别的配置（参见[配置文件](/zh/configuration/config-file)） |
+| `venv/` | 安装时创建的隔离 Python 虚拟环境 |
+| `bin/` | 包含 `octop` 可执行文件，添加到用户 PATH |
+| `secrets/jwt_secret` | 用于签发和验证 JWT 访问令牌的密钥 |
+| `agents/<name>/` | 每个智能体的专属工作区，存放它生成或处理的文件 |
+| `logs/octop.log` | 服务器运行日志 |
+| `plugins/<name>/` | 已安装的插件代码 |
+
+<Warning>
+  不要手动编辑 `octop.db`。若需修改数据，请使用 `octop` CLI 命令或 Web 仪表盘。
+</Warning>
+
+<Tip>
+  将整个 `~/.octop/` 目录复制到另一台机器，就可以迁移您的完整 Octop 安装——参阅[备份与恢复](/zh/guides/backup-restore)。
+</Tip>

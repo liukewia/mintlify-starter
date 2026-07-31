@@ -1,0 +1,125 @@
+---
+title: 'Octop Chat API: WebSocket Streaming and Thread Management'
+sidebarTitle: 'Chat'
+description: 'Send messages to Octop agents via WebSocket for real-time streaming. Manage conversation threads with session create, list, and history endpoints.'
+---
+
+Octop streams agent responses over a WebSocket connection, delivering chunks in real time as the model generates them. Thread management — creating, listing, renaming, and retrieving history — uses standard REST endpoints under the same agent path. All endpoints require owner-level access to the target agent.
+
+## WebSocket chat
+
+### Endpoint
+
+```
+WS /api/agents/{id}/chat/ws?token=<jwt>
+```
+
+Pass your JWT as the `token` query parameter. The WebSocket connection stays open for the lifetime of a conversation session; you can send multiple turns on the same connection.
+
+### Message frames
+
+**Send a user turn:**
+
+```json
+{"type": "user_turn", "content": "Hello, what can you help me with?", "thread_id": "abc123"}
+```
+
+**Receive streaming response chunks** — the server emits one or more content frames, then terminates with a done or error frame:
+
+```json
+{"type": "chunk", "content": "I can help you with research, writing, "}
+{"type": "chunk", "content": "code review, and more."}
+{"type": "done"}
+```
+
+**On error:**
+
+```json
+{"type": "error", "message": "Agent runtime is unavailable."}
+```
+
+**Keepalive ping/pong:**
+
+```json
+// Send
+{"type": "ping"}
+
+// Receive
+{"type": "pong"}
+```
+
+<Note>
+  `thread_id` is stable across sessions. Pass the same `thread_id` on every turn to keep messages in one continuous conversation. Use `session_key` to resume a specific thread when opening a new WebSocket connection.
+</Note>
+
+## Thread management endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/agents/{id}/chat/sessions` | owner | List threads |
+| `POST` | `/agents/{id}/chat/sessions` | owner | Create thread |
+| `PATCH` | `/agents/{id}/chat/sessions/{thread_id}` | owner | Rename or pin thread |
+| `DELETE` | `/agents/{id}/chat/sessions/{thread_id}` | owner | Archive thread |
+| `GET` | `/agents/{id}/chat/sessions/{thread_id}/history` | owner | Paginated message history |
+
+## Create a thread
+
+Creating a thread returns a `thread_id` for routing turns and a `session_key` for resuming the thread across WebSocket reconnections.
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/agents/main/chat/sessions \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+```
+
+```json Response
+{"thread_id": "abc123", "session_key": "sk_..."}
+```
+</CodeGroup>
+
+## Get message history
+
+Retrieve paginated message history for a specific thread.
+
+<CodeGroup>
+```bash cURL
+curl 'http://127.0.0.1:8088/api/agents/main/chat/sessions/abc123/history' \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+The response returns a paginated array of message objects ordered chronologically. Use the standard `limit` and `offset` query parameters to page through long threads.
+
+## Rename or pin a thread
+
+Send a `PATCH` request with a `title` to rename a thread, or set `pinned: true` to pin it to the top of the session list.
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH http://127.0.0.1:8088/api/agents/main/chat/sessions/abc123 \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"title": "Q2 Research Session", "pinned": true}'
+```
+</CodeGroup>
+
+## Polish endpoint
+
+The polish endpoint accepts a single prompt and returns a refined version in one shot — useful for improving user messages before sending them to an agent.
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/agents/main/chat/polish \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"text": "make this shorter: ...your text..."}'
+```
+</CodeGroup>
+
+The response body is `{"text": "...refined text..."}`. You can optionally pass `default_model` to override the agent's default for this one call.
+
+<Tip>
+  Use the polish endpoint in your own UI to offer a "Improve my prompt" button — it adds minimal latency and runs on the same model as the agent without persisting anything to the thread history.
+</Tip>

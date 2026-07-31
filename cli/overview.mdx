@@ -1,0 +1,90 @@
+---
+title: 'Octop CLI Overview: All Commands and Transport Modes'
+sidebarTitle: 'Overview'
+description: 'Complete reference for the octop CLI: global options, transport modes, and every top-level command for managing your Octop server.'
+---
+
+The `octop` CLI is a single command installed alongside the server binary. Most commands work **offline** — reading and writing `~/.octop/` directly — so you can manage agents, users, channels, and cron jobs without a running server. A small number of commands (such as `chats repl`, `channel test`, and `skills enable`) require either an active `octop run` process or start an embedded server instance automatically.
+
+## Global Options
+
+Pass these flags before any subcommand to control output format and default targeting:
+
+| Option | Env var | Effect |
+|---|---|---|
+| `--user TEXT` | `OCTOP_USER` | Default `--user` for admin subcommands (act on behalf of a user) |
+| `--agent TEXT` | `OCTOP_AGENT` | Default `--agent` for subcommands |
+| `--json` | — | Emit machine-readable JSON output for list-style commands |
+| `-v, --version` | — | Print the installed version and exit |
+
+## Transport Modes
+
+Every `octop` command selects one of three transports automatically based on what the operation requires:
+
+<CardGroup cols={3}>
+  <Card title="Offline" icon="database">
+    Reads and writes `~/.octop/` directly. No running server is needed. Used by `init`, `backup`, `plugin`, `agent list`, `user *`, `admin overview/audit`, and most CRUD commands.
+  </Card>
+  <Card title="Attach" icon="plug">
+    Connects to a running `octop run` process over HTTP. Requires `octop user login` first. Used by `chats send/repl` (when not using embedded), `channel test`, `models ollama-*`, `skills enable/disable`, and `provider test`.
+  </Card>
+  <Card title="Embedded" icon="server">
+    Starts a temporary in-process server for a single command, then exits. No separate `octop run` needed. Used by `octop acp`, `octop chats repl`, `octop chats send`, and `octop agent create/from-expert/start/stop/reload`.
+  </Card>
+</CardGroup>
+
+## Command Reference
+
+<Tip>
+  Run `octop --json` with any list command to get machine-readable JSON output — ideal for scripting and CI pipelines.
+</Tip>
+
+| Command | Description |
+|---|---|
+| `octop init` | Bootstrap `~/.octop/` (DB, admin account, JWT secret) |
+| `octop run` | Start the server in the foreground |
+| `octop service` | Manage the system service (systemd on Linux, launchd on macOS) |
+| `octop agent` | Create, list, start, stop, and reload agents |
+| `octop chats` | Chat REPL and conversation session management |
+| `octop chat` | Deprecated alias for `octop chats` — use `octop chats` in new scripts |
+| `octop channel` | IM channel setup and management |
+| `octop cron` | Scheduled task management |
+| `octop provider` | LLM provider management |
+| `octop models` | Model catalog and active model settings |
+| `octop skills` | Enable or disable per-agent skills |
+| `octop acp` | Expose an agent as an ACP server (IDE integration) |
+| `octop backup` | Export and restore backups |
+| `octop user` | User management |
+| `octop admin` | Admin operations (audit log, JWT rotation) |
+| `octop plugin` | Install and manage plugins |
+| `octop update` | Check for and install updates |
+| `octop clean` | Reset CLI state or wipe `~/.octop/` |
+| `octop config` | Inspect and edit CLI state (base URL, defaults) |
+| `octop completion` | Shell completion utilities |
+| `octop version` | Print the installed octop version |
+
+## CLI State File
+
+The file `~/.octop/cli_state.json` stores your CLI session state:
+
+```json
+{
+  "base_url": "http://127.0.0.1:8088",
+  "token": null,
+  "default_user": null,
+  "default_agent": null
+}
+```
+
+| Field | Description |
+|---|---|
+| `base_url` | Server URL used by Attach-mode commands |
+| `token` | JWT stored after `octop user login` |
+| `default_user` | Pinned `--user` value (set via `octop config set-user`) |
+| `default_agent` | Pinned `--agent` value (set via `octop agent use`) |
+
+Delete this file to log out the CLI without contacting the server. The web dashboard and HTTP API clients manage their own tokens separately and do not share this file.
+
+<Note>
+  Override the location of `~/.octop/` by setting the `OCTOP_HOME` environment variable before running any `octop` command.
+</Note>

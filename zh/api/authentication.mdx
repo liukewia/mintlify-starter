@@ -1,0 +1,169 @@
+---
+title: "对 Octop API 的所有请求进行认证与授权"
+sidebarTitle: "认证"
+description: "通过 POST /api/auth/login 获取 JWT 访问令牌，然后在对 Octop REST API 的每个后续调用中将其作为 Bearer 令牌包含。"
+---
+
+除 `/api/health`、`/api/setup/*` 和 OpenAPI 模式外，每个 Octop API 调用都需要 JWT 访问令牌。通过凭据登录获取令牌，然后在后续每个请求的 `Authorization` 头中包含它。令牌默认 24 小时后过期；重新登录即可获取新令牌。
+
+<Warning>
+  默认凭据为 `admin` / `octop`。完成设置向导后请立即修改管理员密码——否则任何能够访问您 Octop 实例的网络用户都可以以管理员身份认证。
+</Warning>
+
+## 登录并获取令牌
+
+<Steps>
+  <Step title="POST 您的凭据">
+    将您的 `username` 和 `password` 发送到登录端点：
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST http://127.0.0.1:8088/api/auth/login \
+      -H 'Content-Type: application/json' \
+      -d '{"username": "admin", "password": "octop"}'
+    ```
+
+    ```python Python
+    import requests
+    
+    resp = requests.post(
+        "http://127.0.0.1:8088/api/auth/login",
+        json={"username": "admin", "password": "octop"},
+    )
+    token = resp.json()["access_token"]
+    ```
+
+    </CodeGroup>
+  </Step>
+  <Step title="提取访问令牌">
+    响应体包含您的 JWT 令牌以及角色和用户详情：
+
+    ```json
+    {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "role": "admin",
+      "user": {
+        "id": 1,
+        "username": "admin",
+        "display_name": "Administrator"
+      }
+    }
+    ```
+  </Step>
+  <Step title="在 Authorization 头中传递令牌">
+    在后续每个请求中将令牌作为 Bearer 凭证传递：
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl http://127.0.0.1:8088/api/agents \
+      -H 'Authorization: Bearer <your_token>'
+    ```
+
+    ```python Python
+    headers = {"Authorization": f"Bearer {token}"}
+    agents = requests.get(
+        "http://127.0.0.1:8088/api/agents",
+        headers=headers,
+    ).json()
+    ```
+
+    </CodeGroup>
+  </Step>
+</Steps>
+
+### 登录请求字段
+
+<ParamField body="username" type="string" required>
+  账户用户名。默认管理员用户名为 `admin`。
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  账户密码。默认管理员密码为 `octop`。
+</ParamField>
+
+### 登录响应字段
+
+<ResponseField name="access_token" type="string">
+  签名过的 JWT 令牌。将此值以 `Bearer <access_token>` 形式包含在 `Authorization` 头中。
+</ResponseField>
+
+<ResponseField name="role" type="string">
+  账户的角色。为 `"admin"` 或 `"user"`。
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  已认证账户的基本资料信息。
+
+  <Expandable title="user 字段">
+    <ResponseField name="user.id" type="integer">
+      用户的唱一数字标识符。
+    </ResponseField>
+
+    <ResponseField name="user.username" type="string">
+      账户的登录用户名。
+    </ResponseField>
+
+    <ResponseField name="user.display_name" type="string">
+      在仪表盘中显示的人类可读显示名称。
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## 令牌过期
+
+令牌默认在 **24 小时**后过期。使用环境变量 `OCTOP_ACCESS_TOKEN_TTL`（以秒为单位）控制此值。令牌过期后，重新调用 `POST /api/auth/login` 获取新令牌。
+
+<Note>
+  通过 `octop admin rotate-jwt-secret` 轮换 JWT 密钥会立即使**所有**待处理令牌失效。轮换后每个用户都必须重新登录。
+</Note>
+
+## 获取当前用户信息
+
+获取当前已认证用户的资料：
+
+```bash
+curl http://127.0.0.1:8088/api/auth/me \
+  -H 'Authorization: Bearer <token>'
+```
+
+响应包含 `id`、`username`、`role`、`display_name`、`locale` 等其他资料字段。
+
+## 修改密码
+
+无需管理员介入，自行修改密码：
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/auth/change-password \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"old_password": "octop", "new_password": "mysecurepassword"}'
+```
+
+成功响应返回 `204 No Content`。
+
+## 退出登录
+
+在服务器端使当前令牌失效：
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/auth/logout \
+  -H 'Authorization: Bearer <token>'
+```
+
+成功响应返回 `204 No Content`。
+
+## 错误参考
+
+| HTTP 状态码 | 错误代码 | 原因 | 解决方法 |
+| --- | --- | --- | --- |
+| `401 Unauthorized` | `AUTH_FAILED` | 登录时提交的凭据无效 | 检查用户名和密码 |
+| `401 Unauthorized` | `TOKEN_EXPIRED` | JWT 已超过其 TTL | 重新登录以获取新令牌 |
+| `403 Forbidden` | `FORBIDDEN` | 已认证但角色权限不足（例如非管理员访问管理员端点） | 用具备所需角色的账户登录 |
+| `403 Forbidden` | `USER_DISABLED` | 账户已被管理员禁用 | 联系您的 Octop 管理员 |
+| `423 Locked` | `LOGIN_LOCKED` | 登录失败次数过多，账户已锁定 | 等待锁定期结束，或请管理员调用 `POST /api/users/{id}/unlock-login` |
+
+<Tip>
+  设置 `OCTOP_ENABLE_API_DOCS=1`（或在 `config.json` 中设置 `"enable_api_docs": true`）并访问 `http://127.0.0.1:8088/api/docs`，可以使用内置的 Scalar 界面交互式探索每个端点——无需额外工具。
+</Tip>

@@ -1,0 +1,123 @@
+---
+title: 'Octop Users and Admin API: Manage Accounts and Settings'
+sidebarTitle: 'Users & Admin'
+description: 'Admin-only endpoints for creating and managing Octop users, resetting passwords, viewing audit logs, and managing system settings.'
+---
+
+The Users and Admin API endpoints require the `admin` role. Use them to create accounts for your team, update user roles and display names, reset passwords, unlock locked-out accounts, and audit activity across the entire Octop instance. Obtain an admin Bearer token with `POST /api/auth/login` using an admin account.
+
+## User management endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/users` | admin | List all users |
+| `POST` | `/users` | admin | Create a user |
+| `GET` | `/users/{id}` | admin | Get user details |
+| `PATCH` | `/users/{id}` | admin | Update role, display name, or enabled flag |
+| `POST` | `/users/{id}/reset-password` | admin | Reset a user's password |
+| `POST` | `/users/{id}/unlock-login` | admin | Clear login lockout |
+| `DELETE` | `/users/{id}` | admin | Delete a user |
+
+## Create a user
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/users \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "username": "alice",
+    "password": "secure123",
+    "role": "user",
+    "display_name": "Alice Smith"
+  }'
+```
+</CodeGroup>
+
+A successful request returns `201 Created` with the new user row. The `role` field accepts `"user"` or `"admin"`.
+
+## Update a user
+
+Send a `PATCH` request with any subset of `role`, `display_name`, `enabled`, or `locale`. To disable an account without deleting it, set `"enabled": false`.
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH http://127.0.0.1:8088/api/users/alice \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"role": "admin", "display_name": "Alice Smith (Admin)"}'
+```
+</CodeGroup>
+
+## Reset a password
+
+Send a `POST` request with the new password. The user must change this password on next login if your policy requires it.
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/users/alice/reset-password \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"new_password": "NewSecurePass!"}'
+```
+</CodeGroup>
+
+Returns `204 No Content` on success.
+
+## Unlock a locked-out user
+
+<Note>
+  When a user exceeds the maximum number of failed login attempts (configured by `OCTOP_LOGIN_MAX_ATTEMPTS`), their account is locked until the lockout period expires or an admin clears it. Use `POST /users/{id}/unlock-login` to immediately restore access without waiting for the timeout.
+</Note>
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/users/alice/unlock-login \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+## Admin overview and audit log
+
+These endpoints give you a high-level view of instance activity.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/admin/overview` | admin | User count, agent count, and runtime states |
+| `GET` | `/admin/audit-log` | admin | Recent audit log entries |
+
+### Overview
+
+<CodeGroup>
+```bash cURL
+curl http://127.0.0.1:8088/api/admin/overview \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+Returns `{user_count, agent_count, ...}` — useful for health dashboards and monitoring scripts.
+
+### Audit log
+
+<CodeGroup>
+```bash cURL
+curl http://127.0.0.1:8088/api/admin/audit-log \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+Returns recent audit rows recording key admin and user actions across the instance.
+
+### Rotate the JWT secret
+
+<Warning>
+  Running `octop admin rotate-jwt-secret` immediately invalidates **all** active sessions across every user account — including your own. Every user will be logged out and must re-authenticate. Only rotate the JWT secret in a planned maintenance window or after a suspected credential compromise.
+</Warning>
+
+JWT secret rotation is performed via the Octop CLI, not the REST API:
+
+```bash
+octop admin rotate-jwt-secret
+```
+
+The new secret is generated server-side. After rotation, all users must re-login to obtain a new token.

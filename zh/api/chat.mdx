@@ -1,0 +1,111 @@
+---
+title: "Octop 对话 API：WebSocket 流式传输与线程管理"
+sidebarTitle: "对话"
+description: "通过 WebSocket 与 Octop 智能体对话并流式接收回复，并使用线程管理端点组织对话历史。"
+---
+
+通过 WebSocket 与智能体对话，实时流式接收回复，并管理对话线程。
+
+## WebSocket 端点
+
+```text
+WS /api/agents/{id}/chat/ws?token=<jwt>
+```
+
+由于浏览器 WebSocket API 不支持自定义头，令牌需作为查询参数传递，而不是 `Authorization` 头。
+
+## 消息帧
+
+向智能体发送一轮对话：
+
+```json
+{"type": "user_turn", "content": "你好！", "thread_id": "abc123"}
+```
+
+服务器以流式块回应：
+
+```json
+{"type": "chunk", "content": "你好！我能"}
+```
+
+回复完成时发送：
+
+```json
+{"type": "done"}
+```
+
+若发生错误：
+
+```json
+{"type": "error", "message": "模型请求超时"}
+```
+
+为保持连接存活，服务器会周期性发送 ping/pong 帧。
+
+<Note>
+  `thread_id` 在整个对话中保持不变。若需在断开后恢复会话，请使用创建线程时返回的 `session_key`。
+</Note>
+
+## 线程管理
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| GET | `/agents/{id}/chat/sessions` | 列出对话线程 |
+| POST | `/agents/{id}/chat/sessions` | 创建新线程 |
+| PATCH | `/agents/{id}/chat/sessions/{thread_id}` | 重命名或固定线程 |
+| DELETE | `/agents/{id}/chat/sessions/{thread_id}` | 删除线程 |
+| GET | `/agents/{id}/chat/sessions/{thread_id}/history` | 获取线程历史记录 |
+
+## 创建线程
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/chat/sessions \
+  -H 'Authorization: Bearer <token>'
+```
+
+响应：
+
+```json
+{"thread_id": "abc123", "session_key": "sk_..."}
+```
+
+## 获取历史记录
+
+```bash
+curl "http://127.0.0.1:8088/api/agents/1/chat/sessions/abc123/history?limit=50&offset=0" \
+  -H 'Authorization: Bearer <token>'
+```
+
+支持 `limit` 和 `offset` 分页参数。
+
+## 重命名或固定线程
+
+```bash
+curl -X PATCH http://127.0.0.1:8088/api/agents/1/chat/sessions/abc123 \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"title": "项目规划讨论", "pinned": true}'
+```
+
+## 润饰端点
+
+在实际发送之前优化用户输入的提示词文本：
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/chat/polish \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"text": "帮我写个邮件"}'
+```
+
+响应：
+
+```json
+{"text": "请帮我草拟一封专业的邮件，受信人是..."}
+```
+
+可选参数 `default_model` 可用于覆盖润饰时使用的模型。
+
+<Tip>
+  润饰端点很适合用于 UI 中的“润饰提示词”按钮——在实际发射前帮用户把输入润色为更清晰、更具体的提示词。
+</Tip>

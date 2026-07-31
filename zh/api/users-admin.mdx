@@ -1,0 +1,104 @@
+---
+title: "Octop 用户与管理 API：管理账户与设置"
+sidebarTitle: "用户与管理"
+description: "使用 Octop 的 /api/users 和 /api/admin 端点管理用户账户、角色、审计日志以及平台设置（仅限管理员）。"
+---
+
+管理用户账户、角色以及平台级设置。本页面的所有端点都需要管理员角色。
+
+## 用户管理
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| GET | `/users` | 列出所有用户 |
+| POST | `/users` | 创建新用户 |
+| GET | `/users/{id}` | 获取用户详情 |
+| PATCH | `/users/{id}` | 更新用户 |
+| DELETE | `/users/{id}` | 删除用户 |
+| POST | `/users/{id}/reset-password` | 重置用户密码 |
+| POST | `/users/{id}/unlock-login` | 解除用户登录锁定 |
+
+## 创建用户
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/users \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "username": "alice",
+    "password": "temporary-password",
+    "role": "user",
+    "display_name": "Alice Chen"
+  }'
+```
+
+成功时返回 `201 Created`。
+
+## 更新用户
+
+```bash
+curl -X PATCH http://127.0.0.1:8088/api/users/5 \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"role": "admin", "display_name": "Alice Chen (管理员)"}'
+```
+
+可更新字段包括 `role`、`display_name`、`enabled` 和 `locale`。通过设置 `"enabled": false` 可禁用账户，而无需删除。
+
+## 重置密码
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/users/5/reset-password \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"new_password": "new-temporary-password"}'
+```
+
+返回 `204 No Content`。
+
+## 解除用户锁定
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/users/5/unlock-login \
+  -H 'Authorization: Bearer <token>'
+```
+
+<Note>
+  连续多次登录失败后（默认阈值由 `OCTOP_LOGIN_MAX_ATTEMPTS` 控制），账户会自动锁定。管理员可以通过此端点在锁定期结束前提前解除锁定。
+</Note>
+
+## 管理员概览
+
+获取平台级汇总信息：
+
+```bash
+curl http://127.0.0.1:8088/api/admin/overview \
+  -H 'Authorization: Bearer <token>'
+```
+
+响应：
+
+```json
+{"user_count": 12, "agent_count": 5, "...": "..."}
+```
+
+## 审计日志
+
+获取最近的审计日志记录：
+
+```bash
+curl http://127.0.0.1:8088/api/admin/audit-log \
+  -H 'Authorization: Bearer <token>'
+```
+
+## 轮换 JWT 密钥
+
+JWT 密钥轮换仅支持通过 CLI 操作，无法通过 API 进行：
+
+```bash
+octop admin rotate-jwt-secret
+```
+
+<Warning>
+  轮换 JWT 密钥会立即使**所有**正在进行的会话失效，**包括管理员自己的会话**。轮换后所有人都必须重新登录。
+</Warning>

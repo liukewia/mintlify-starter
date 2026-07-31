@@ -1,0 +1,202 @@
+---
+title: 'Octop CLI: Agent, Chat, Skills, and Model Commands'
+sidebarTitle: 'Agent Commands'
+description: 'Create and manage agents, start interactive chat sessions, enable or disable skills, and configure LLM providers from the octop CLI.'
+---
+
+The CLI gives you full control over agents and conversations. Create agents from scratch or from bundled expert templates, start interactive chat sessions directly in the terminal, configure skills, manage LLM providers, and pick active models — all without opening the web dashboard.
+
+## `octop agent`
+
+Create, inspect, and control agent lifecycles. Most subcommands work without requiring `octop run` to be running.
+
+<CodeGroup>
+```bash Create a basic agent
+octop agent create --name myagent
+```
+```bash Create an agent with an MBTI persona
+octop agent create --name analyst --persona-mbti INTJ
+```
+```bash Create an agent from a bundled expert template
+octop agent from-expert <expert_id>
+```
+```bash List all agents
+octop agent list
+```
+```bash Start, stop, reload, or delete an agent
+octop agent start --agent myagent
+octop agent stop --agent myagent
+octop agent reload --agent myagent
+octop agent delete --agent myagent
+```
+```bash List bundled expert templates
+octop agent experts
+```
+</CodeGroup>
+
+### Subcommands
+
+| Subcommand | Description |
+|---|---|
+| `create` | Create a new agent (accepts `--user` for admin cross-user creation) |
+| `from-expert` | Create an agent from a bundled expert template |
+| `list` | List all agents belonging to the current user |
+| `use <id>` | Pin this agent as the default for subsequent commands |
+| `start` | Start the agent runtime |
+| `stop` | Stop the agent runtime |
+| `reload` | Reload the agent runtime without deleting conversation history |
+| `delete` | Delete the agent row and its runtime |
+| `experts` | List all bundled expert templates available on this install |
+
+Run `octop agent use <id>` to write the agent ID into `~/.octop/cli_state.json`. All subsequent commands that accept `--agent` will default to this value, saving you from repeating it.
+
+---
+
+## `octop chats`
+
+Manage conversation threads and send messages. The `repl` and `send` subcommands start a temporary server process automatically — no separate `octop run` is needed.
+
+<CodeGroup>
+```bash Start an interactive chat REPL
+octop chats repl
+```
+```bash Send a single message and stream the response
+octop chats send --agent main 'Hello'
+```
+```bash List threads for an agent
+octop chats list --agent main
+```
+```bash Show message history for a thread
+octop chats get --agent main <thread_id>
+```
+```bash Create a new thread
+octop chats create --agent main
+```
+```bash Rename or pin a thread
+octop chats update --agent main <thread_id>
+```
+```bash Delete a thread
+octop chats delete --agent main <thread_id>
+```
+</CodeGroup>
+
+### Subcommands
+
+| Subcommand | Server required | Description |
+|---|---|---|
+| `list` | No | List conversation threads for an agent |
+| `get` | No | Show message history for a thread |
+| `create` | No | Start a new thread |
+| `update` | No | Rename or pin a thread |
+| `delete` | No | Delete a thread |
+| `send` | Auto (embedded) | Send one message and stream the response |
+| `repl` | Auto (embedded) | Interactive chat REPL |
+
+<Note>
+  `octop chats repl` and `octop chats send` start a temporary in-process server for the duration of the command. You do not need to run `octop run` first. The `list`, `get`, `create`, `update`, and `delete` subcommands work fully offline against `~/.octop/octop.db`.
+</Note>
+
+<Tip>
+  The legacy command `octop chat` is a deprecated alias for `octop chats`. It still works but prints a warning — update your scripts to use `octop chats` instead.
+</Tip>
+
+---
+
+## `octop skills`
+
+Enable or disable per-agent skills. All subcommands query the skill library at boot and require a running server.
+
+<CodeGroup>
+```bash List skills for an agent
+octop skills list --agent main
+```
+```bash Enable a skill
+octop skills enable --agent main <skill_name>
+```
+```bash Disable a skill
+octop skills disable --agent main <skill_name>
+```
+```bash Show or edit the per-agent skills config
+octop skills config --agent main
+```
+</CodeGroup>
+
+### Subcommands
+
+| Subcommand | Description |
+|---|---|
+| `list` | List skills for an agent |
+| `enable` | Enable a skill for the agent |
+| `disable` | Disable a skill for the agent |
+| `config` | Show or edit the per-agent skills configuration |
+
+<Warning>
+  These commands require a running `octop run` process. They communicate with the live server to update the agent's skill configuration. Start the server with `octop run` or `octop service start` before using `octop skills enable` or `octop skills disable`.
+</Warning>
+
+---
+
+## `octop models`
+
+Manage the model catalog, configure providers interactively, and pull Ollama models.
+
+<CodeGroup>
+```bash Interactive configuration wizard
+octop models config
+```
+```bash List all resolved models across enabled providers
+octop models list
+```
+```bash Show or set the global default model
+octop models active
+```
+```bash List built-in provider preset templates
+octop models presets
+```
+```bash List locally available Ollama models
+octop models ollama-list
+```
+```bash Pull a model via Ollama
+octop models ollama-pull llama3.2
+```
+```bash Remove a local Ollama model
+octop models ollama-rm llama3.2
+```
+</CodeGroup>
+
+### Subcommands
+
+| Subcommand | Server required | Description |
+|---|---|---|
+| `config` | No | Interactive wizard to create a provider and set the active model |
+| `list` | No | List all models resolved across enabled providers |
+| `active` | No | Show or set the global default model (admin) |
+| `presets` | No | List built-in provider templates |
+| `ollama-list` | Yes | List models available in a local Ollama instance |
+| `ollama-pull` | Yes | Pull a model via Ollama |
+| `ollama-rm` | Yes | Remove a local Ollama model |
+
+---
+
+## `octop provider`
+
+Manage LLM provider records in the local database. The `test` subcommand requires a running server to make a live API call.
+
+<CodeGroup>
+```bash List providers
+octop provider list
+```
+```bash Create a provider interactively
+octop provider create
+```
+```bash Test connectivity to a provider
+octop provider test
+```
+```bash Delete a provider
+octop provider delete
+```
+</CodeGroup>
+
+<Note>
+  `octop provider list`, `create`, and `delete` operate offline against `~/.octop/octop.db`. Only `octop provider test` requires a running server, because it sends a live ping to the provider API.
+</Note>

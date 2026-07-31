@@ -1,0 +1,65 @@
+---
+title: "在 Octop 中设置 IM 渠道：飞书、钉钉、Discord"
+sidebarTitle: "IM 渠道"
+description: "将 Octop 智能体连接到飞书、钉钉、QQ、Discord或企业微信，让您的团队可以从日常使用的平台上与 AI 智能体发消息。"
+---
+
+将 Octop 智能体连接到飞书、钉钉、QQ、Discord 或企业微信，让您的团队能在日常使用的平台上直接与 AI 智能体对话。
+
+## 飞书
+
+1. 在[飞书开放平台](https://open.feishu.cn)创建一个企业自建应用
+2. 获取 App ID 和 App Secret
+3. 在事件订阅中启用机器人能力，并配置回调地址
+4. 在 Octop 中添加飞书渠道：
+
+```bash
+octop channel add --platform feishu --app-id xxx --app-secret xxx --agent my-agent
+```
+
+## 钉钉
+
+1. 在[钉钉开放平台](https://open.dingtalk.com)创建一个机器人应用
+2. 获取 Client ID 和 Client Secret
+3. 启用机器人消息接收权限
+4. 在 Octop 中添加钉钉渠道：
+
+```bash
+octop channel add --platform dingtalk --client-id xxx --client-secret xxx --agent my-agent
+```
+
+## QQ
+
+1. 在 QQ 机器人开放平台注册应用
+2. 获取 App ID 和 Token
+3. 在 Octop 中添加 QQ 渠道：
+
+```bash
+octop channel add --platform qq --app-id xxx --token xxx --agent my-agent
+```
+
+## Discord
+
+1. 在 [Discord 开发者门户](https://discord.com/developers)创建一个 Bot
+2. 复制 Bot Token
+3. 将 Bot 邀请到您的服务器
+4. 在 Octop 中添加 Discord 渠道：
+
+```bash
+octop channel add --platform discord --token xxx --agent my-agent
+```
+
+## 企业微信
+
+1. 在企业微信后台创建一个自建应用
+2. 获取 CorpID、AgentID 和 Secret
+3. 配置回调 URL 以接收消息
+4. 在 Octop 中添加企业微信渠道：
+
+```bash
+octop channel add --platform wecom --corp-id xxx --agent-id xxx --secret xxx --agent my-agent
+```
+
+<Warning>
+  请将所有凭据安全存放。这些凭据授予对您 IM 平台账户的机器人控制权。
+</Warning>

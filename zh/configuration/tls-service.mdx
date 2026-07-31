@@ -1,0 +1,67 @@
+---
+title: "为 Octop 配置 HTTPS 并注册为系统服务"
+sidebarTitle: "TLS 与服务"
+description: "使用自签名或自定义证书通过 HTTPS 运行 Octop，并通过 systemd 或 launchd 将其注册为持久化系统服务。"
+---
+
+使用自签名或自定义证书通过 HTTPS 运行 Octop，并将其注册为持久化系统服务，实现开机自启。
+
+## 启用 HTTPS
+
+在 `config.json` 中设置 TLS 选项：
+
+```json
+{
+  "tls": {
+    "enabled": true,
+    "cert_path": "/path/to/cert.pem",
+    "key_path": "/path/to/key.pem"
+  }
+}
+```
+
+若您没有现成证书，可以生成一个自签名证书用于本地测试：
+
+```bash
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+```
+
+<Warning>
+  自签名证书会在浏览器中触发安全警告。对于生产环境，请使用受信任的证书颁发机构（如 Let's Encrypt）发布的证书。
+</Warning>
+
+## 注册为系统服务
+
+让 Octop 在后台运行，并在机器启动时自动启动：
+
+```bash
+octop service start
+```
+
+该命令会根据您的平台注册合适的服务管理器：
+
+| 平台 | 服务管理器 |
+| --- | --- |
+| Linux | systemd |
+| macOS | launchd |
+| Windows | Windows Service |
+
+## 管理服务
+
+```bash
+# 查看服务状态
+octop service status
+
+# 停止服务
+octop service stop
+
+# 重启服务
+octop service restart
+
+# 从启动列表中移除
+octop service uninstall
+```
+
+<Note>
+  作为系统服务运行时，Octop 会在异常退出后自动重启，并在机器重启后自动启动。
+</Note>

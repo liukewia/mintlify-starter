@@ -1,0 +1,89 @@
+---
+title: 'Octop config.json Reference: All Server Configuration Fields'
+sidebarTitle: 'Config File'
+description: 'Octop reads ~/.octop/config.json for server settings. Configure the port, CORS, timezone, database backend, and TLS from this file.'
+---
+
+Octop generates `config.json` inside `~/.octop/` on its first run. You can edit the file directly at any time to change server behavior — no reinstall needed. Environment variables always take priority over file values, so any `OCTOP_*` variable you export will override the corresponding key in this file.
+
+## Field reference
+
+### Core settings
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `bind_host` | string | `127.0.0.1` | Interface Octop listens on. Set to `0.0.0.0` to accept connections from other machines on your network. |
+| `port` | int | `8088` | TCP port Octop binds to. |
+| `log_level` | string | `info` | Log verbosity. One of `debug`, `info`, `warning`, or `error`. |
+| `access_token_ttl_seconds` | int | `86400` | How long a JWT access token stays valid (in seconds). The default is 24 hours. |
+| `login_max_attempts` | int | `5` | Number of failed login attempts allowed before an account is locked out. |
+| `login_lockout_seconds` | int | `900` | How long (in seconds) an account stays locked after hitting `login_max_attempts`. The default is 15 minutes. |
+| `cors_origins` | list | `[]` | List of origins permitted to make cross-origin requests to the API. Leave empty to disallow all cross-origin requests. |
+| `default_timezone` | string | `Asia/Shanghai` | IANA timezone used for dashboard timestamps, cron scheduling, and the agent harness. |
+| `enable_dashboard` | bool | `true` | Serve the built-in React dashboard at `/`. Set to `false` to expose the API only. |
+| `enable_api_docs` | bool | `false` | Expose the interactive Scalar API docs at `/api/docs`. Safe to enable during development; keep off in production. |
+| `require_setup_password` | bool | `true` | Require a password gate during the first-run setup wizard. Set to `false` only for fully unattended bootstraps using `OCTOP_ADMIN_USERNAME` and `OCTOP_ADMIN_PASSWORD`. |
+
+### `database` section
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `driver` | string | `sqlite` | Storage backend. Set to `sqlite` or `postgresql`. |
+| `sqlite_path` | string | `octop.db` | Path to the SQLite database file. Relative paths resolve from `~/.octop/`. |
+| `host` | string | `127.0.0.1` | PostgreSQL server host. Used only when `driver` is `postgresql`. |
+| `port` | int | `5432` | PostgreSQL server port. |
+| `database` | string | `octop` | PostgreSQL database name. |
+| `user` | string | `octop` | PostgreSQL user. |
+| `password` | string | `""` | PostgreSQL password. In production, prefer the `OCTOP_DATABASE_PASSWORD` environment variable over storing the password here. |
+
+<Warning>
+Avoid storing the PostgreSQL password in `config.json` in production — use the `OCTOP_DATABASE_PASSWORD` environment variable instead, and restrict the file's permissions to your service account.
+</Warning>
+
+### `tls` section
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | bool | `false` | Enable TLS termination inside Octop. |
+| `cert_file` | string | `""` | Absolute path to the PEM-encoded certificate file. |
+| `key_file` | string | `""` | Absolute path to the PEM-encoded private key file. |
+
+See [TLS & Service](/configuration/tls-service) for the full walk-through, including self-signed certificate generation.
+
+## Example config.json
+
+```json
+{
+  "bind_host": "0.0.0.0",
+  "port": 8088,
+  "log_level": "info",
+  "access_token_ttl_seconds": 86400,
+  "login_max_attempts": 5,
+  "login_lockout_seconds": 900,
+  "cors_origins": ["https://app.example.com"],
+  "default_timezone": "America/New_York",
+  "enable_dashboard": true,
+  "enable_api_docs": false,
+  "require_setup_password": true,
+  "database": {
+    "driver": "postgresql",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "database": "octop",
+    "user": "octop"
+  },
+  "tls": {
+    "enabled": true,
+    "cert_file": "/etc/ssl/octop/cert.pem",
+    "key_file": "/etc/ssl/octop/key.pem"
+  }
+}
+```
+
+<Tip>
+Set `"enable_api_docs": true` to unlock the interactive Scalar API explorer at `/api/docs`. It lets you browse every endpoint, inspect request/response schemas, and send test requests directly from your browser — ideal when building integrations or writing automation scripts.
+</Tip>
+
+<Note>
+Configuration changes in `config.json` take effect the next time you restart the server. Run `octop service restart` if Octop is running as a system service, or stop and re-run `octop run` for foreground mode.
+</Note>

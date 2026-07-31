@@ -1,0 +1,146 @@
+---
+title: 'Octop Docker Setup: Compose, Volumes, and Environment Vars'
+sidebarTitle: 'Docker Setup'
+description: 'Deploy Octop using Docker Compose or a standalone docker run command. Includes volume mounts, environment variables, and first-run setup.'
+---
+
+Octop ships a pre-built Docker image that wraps the full platform — web dashboard, CLI, IM channels, and the agent runtime — in a single container. Docker Compose is the recommended approach for production and multi-user deployments because it handles volume mounts and environment configuration out of the box. All your data persists in a named volume (or a host bind mount), so upgrades never touch your conversations, agents, or credentials.
+
+<Steps>
+
+  <Step title="Pull and start with Docker Compose">
+    From the root of the cloned repository, start Octop with a single command:
+
+    ```bash
+    docker compose -f docker/docker-compose.yml up -d --build
+    ```
+
+    Docker Compose builds the image from source, mounts your host `~/.octop` directory into the container at `/data/.octop`, and starts the server in detached mode.
+
+    To pass custom environment variables (API keys, port overrides, etc.), create a `docker/.env` file before running the command:
+
+    ```bash
+    cp .env.example docker/.env
+    # Edit docker/.env with your values, then:
+    docker compose -f docker/docker-compose.yml up -d --build
+    ```
+
+    <Tip>
+      Set `OCTOP_DATA` in `docker/.env` to choose a custom host directory for all persistent data. This makes it easy to back up or migrate your entire Octop instance by copying a single directory.
+    </Tip>
+  </Step>
+
+  <Step title="Or start with a standalone docker run">
+    If you prefer not to use Compose, build the image manually and run the container directly:
+
+    ```bash
+    # Build the image from source
+    bash docker/docker_build.sh
+
+    # Run the container
+    docker run -d \
+      -p 8088:8088 \
+      -v octop-data:/data/.octop \
+      -e HOME=/data \
+      -e OCTOP_DEFAULT_PASSWORD=changeme \
+      octop:latest
+    ```
+
+    The named volume `octop-data` persists your database, secrets, and agent workspaces across container restarts and upgrades.
+
+    <Note>
+      The `HOME=/data` environment variable is required so that `~/.octop` resolves to `/data/.octop` inside the container, where the named volume is mounted.
+    </Note>
+  </Step>
+
+  <Step title="Open the dashboard and log in">
+    Once the container starts, open your browser and navigate to:
+
+    ```
+    http://localhost:8088
+    ```
+
+    Log in with the first-run credentials:
+
+    | Field | Default value |
+    |-------|--------------|
+    | Username | `admin` |
+    | Password | `octop` |
+
+    <Warning>
+      The default password is publicly known. Change it immediately after your first login by going to **Settings → Security** in the dashboard. For unattended deployments, set a strong password via the `OCTOP_DEFAULT_PASSWORD` environment variable **before** the first container boot — credentials are written only once, when `~/.octop/octop.db` does not yet exist.
+    </Warning>
+
+    To verify the container is healthy before logging in, run:
+
+    ```bash
+    curl http://localhost:8088/api/health
+    ```
+  </Step>
+
+  <Step title="Configure a model provider">
+    Octop supports OpenAI-compatible APIs, DashScope (Qwen), Ollama, and other presets. Add your first provider directly from the dashboard:
+
+    ```text
+    Settings → Providers → Add Provider
+    ```
+
+    Select a provider preset, enter your API key, and save. You can also pass common API keys as environment variables so they are available to the agent runtime immediately on first boot:
+
+    ```bash
+    docker run -d \
+      -p 8088:8088 \
+      -v octop-data:/data/.octop \
+      -e HOME=/data \
+      -e OCTOP_DEFAULT_PASSWORD=changeme \
+      -e OPENAI_API_KEY=sk-... \
+      octop:latest
+    ```
+
+    Once the provider is configured, open the **Chat** section in the dashboard and start your first conversation.
+  </Step>
+
+</Steps>
+
+## Environment variables
+
+Use these variables to configure Octop's Docker deployment. For Docker Compose, add them to `docker/.env`. For `docker run`, pass them with `-e KEY=value`.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OCTOP_PORT` | `8088` | HTTP listen port inside the container |
+| `OCTOP_DEFAULT_PASSWORD` | `octop` | First-run admin password — applied only when the database does not yet exist |
+| `OCTOP_ADMIN_USERNAME` | `admin` | First-run admin username — applied only when the database does not yet exist |
+| `OCTOP_DATA` | `~/.octop` | Host directory for the Compose bind mount (maps to `/data/.octop` in the container) |
+| `HOME` | `/data` | Must be `/data` so that `~/.octop` resolves to the mounted volume path |
+| `OPENAI_API_KEY` | — | OpenAI-compatible API key, made available to the agent runtime |
+| `DASHSCOPE_API_KEY` | — | Alibaba DashScope (Qwen) API key |
+
+<Warning>
+  `OCTOP_DEFAULT_PASSWORD` and `OCTOP_ADMIN_USERNAME` only take effect during the **first boot** of a fresh data volume, when `octop.db` does not exist. Changing these variables after the database is initialized has no effect. To change the admin password on an existing install, use the dashboard under **Settings → Security**.
+</Warning>
+
+## Useful operations
+
+```bash
+# Follow container logs
+docker logs -f octop
+
+# Run a CLI command inside the running container
+docker exec -it octop octop --version
+
+# Stop the Compose stack
+docker compose -f docker/docker-compose.yml down
+
+# Rebuild and restart after a code update
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+<CardGroup cols={2}>
+  <Card title="Bare-metal Quickstart" icon="bolt" href="/quickstart">
+    Install Octop directly on macOS, Linux, or Windows without Docker using the one-line installer.
+  </Card>
+  <Card title="Configuration Reference" icon="sliders" href="/configuration/config-file">
+    Explore all `config.json` keys and environment variable overrides for fine-grained control.
+  </Card>
+</CardGroup>

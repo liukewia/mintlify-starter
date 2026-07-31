@@ -1,0 +1,119 @@
+---
+title: "Octop 定时任务 API：通过 REST 计划自动化智能体任务"
+sidebarTitle: "定时任务"
+description: "使用 Octop 的 /api/agents/{agent_id}/cron 端点，通过 cron 表达式、间隔或一次性日期计划自动化智能体任务。"
+---
+
+使用 cron 表达式、间隔或一次性日期计划智能体任务，实现自动化。
+
+## 基地路径
+
+```text
+/api/agents/{agent_id}/cron
+```
+
+## 端点
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| GET | `/cron/settings` | 获取服务器时区信息 |
+| GET | `/agents/{aid}/cron` | 列出定时任务 |
+| POST | `/agents/{aid}/cron` | 创建定时任务 |
+| GET | `/agents/{aid}/cron/{cid}` | 获取定时任务详情 |
+| PATCH | `/agents/{aid}/cron/{cid}` | 更新定时任务 |
+| DELETE | `/agents/{aid}/cron/{cid}` | 删除定时任务 |
+| POST | `/agents/{aid}/cron/{cid}/run-now` | 立即触发任务 |
+
+## 创建定时任务
+
+### 每日早报
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/cron \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "trigger": "0 9 * * *",
+    "prompt": "总结今日待办事项并发送早报",
+    "task_type": "agent"
+  }'
+```
+
+### 每 30 分钟一次
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/cron \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "trigger": "interval:30",
+    "prompt": "检查未处理的工单",
+    "task_type": "text"
+  }'
+```
+
+### 一次性任务
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/cron \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "trigger": "date:2025-06-01T09:00:00",
+    "prompt": "发送发布提醒",
+    "task_type": "agent"
+  }'
+```
+
+### 请求字段
+
+<ParamField body="trigger" type="string" required>
+  触发定义。cron 表达式、`interval:N`（分钟）或 `date:ISO8601`。
+</ParamField>
+
+<ParamField body="prompt" type="string" required>
+  触发时发送给智能体的提示词。最大 2000 个字符。
+</ParamField>
+
+<ParamField body="task_type" type="string">
+  `"agent"`（完整智能体回合）或 `"text"`（简单文本生成）。
+</ParamField>
+
+<ParamField body="session_key" type="string">
+  复用现有对话会话而不是创建新会话。
+</ParamField>
+
+<ParamField body="fresh_thread" type="boolean">
+  若为 `true`，每次触发都创建一个全新的对话线程。
+</ParamField>
+
+<ParamField body="model" type="string">
+  仅对此定时任务覆盖默认模型。
+</ParamField>
+
+## 触发器格式
+
+| 格式 | 示例 | 描述 |
+| --- | --- | --- |
+| cron 表达式 | `0 9 * * *` | 标准 5 字段 cron 语法 |
+| `interval:N` | `interval:30` | 每 N 分钟重复 |
+| `date:ISO8601` | `date:2025-06-01T09:00:00` | 单次执行 |
+
+<Note>
+  cron 表达式根据服务器时区解析。通过 `GET /api/cron/settings` 获取当前服务器时区。
+</Note>
+
+## 立即运行
+
+无需等待下一个计划运行即可立即触发任务：
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/cron/3/run-now \
+  -H 'Authorization: Bearer <token>'
+```
+
+返回 `204 No Content`，将任务入队立即执行，不影响其下一个计划运行时间。
+
+<Tip>
+  将 `fresh_thread` 与每日 cron 任务结合使用，可为每天创建独立、按日期划分的对话线程，避免历史信息相互干扰。
+</Tip>

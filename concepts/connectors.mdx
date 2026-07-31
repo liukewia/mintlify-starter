@@ -1,0 +1,85 @@
+---
+title: "Connectors: Extend Agents with OAuth and MCP"
+sidebarTitle: "Connectors"
+description: "Octop Connectors add OAuth-authenticated apps and MCP gateways to your agents, giving them access to external services and tools."
+---
+
+Connectors give your agents access to external services and tools beyond their built-in capabilities. There are two types: **OAuth connectors**, which link pre-built integrations to services you authorise, and **MCP gateways**, which connect any Model Context Protocol-compatible tool server. Once a connector is active, it appears as an available tool inside your agent's chat context — the agent can invoke it automatically when the task calls for it.
+
+## OAuth connectors
+
+OAuth connectors bundle the authentication flow and API logic for a specific external service. You authorise the connection once; after that, the agent can use the service as a tool without requiring you to provide credentials in chat.
+
+### Available OAuth connectors
+
+Octop ships pre-built Tencent integrations out of the box:
+
+| Connector | What it provides |
+|---|---|
+| **Tencent Docs** | Read and write documents in Tencent's collaborative workspace |
+| **Weibo Trends** | Fetch trending topics and keyword data from Weibo |
+| **Tencent News** | Query news articles and headlines |
+
+Additional connectors may be available depending on your Octop version. Check **Dashboard → Connectors** for the full current list.
+
+### Set up an OAuth connector
+
+<Steps>
+  <Step title="Open Connectors">
+    Navigate to **Dashboard → Connectors** in the sidebar.
+  </Step>
+  <Step title="Select a connector">
+    Find the service you want to add and click **Connect**.
+  </Step>
+  <Step title="Authorise access">
+    Follow the OAuth flow in the popup window. Octop stores the resulting token securely under `~/.octop/secrets/` — it never leaves your machine.
+  </Step>
+  <Step title="Assign to an agent">
+    Once authorised, enable the connector for the specific agent that should use it. Navigate to the agent's **Settings → Connectors** tab and toggle the connector on.
+  </Step>
+</Steps>
+
+<Warning>
+  Revoking a connector's authorisation from the external service (e.g. from Tencent's app management console) invalidates the stored token. The agent will report a tool error when it next tries to use that connector. Re-authorise from the Connectors page to restore access.
+</Warning>
+
+## MCP gateways
+
+The **Model Context Protocol (MCP)** is an open standard for connecting AI agents to external tool servers. Any MCP-compatible server — whether it's a file system tool, a database query tool, or a custom internal service — can be added to Octop as an MCP gateway.
+
+### Add an MCP gateway
+
+<Steps>
+  <Step title="Open Connectors">
+    Navigate to **Dashboard → Connectors** and click **Add MCP Gateway**.
+  </Step>
+  <Step title="Enter the endpoint URL">
+    Provide the URL of your MCP-compatible tool server. Octop connects to it and retrieves the list of tools it exposes.
+  </Step>
+  <Step title="Assign to an agent">
+    Enable the MCP gateway on the agent that should have access to its tools. The tools appear in the agent's available-tools list immediately.
+  </Step>
+</Steps>
+
+<Note>
+  MCP gateways use the stdio JSON-RPC transport by default. Ensure your MCP server is reachable from the machine running `octop run`.
+</Note>
+
+## How connectors appear to an agent
+
+From the agent's perspective, every active connector — whether OAuth or MCP — is simply a **tool** available during a conversation. When you ask the agent to do something that requires an external service, it selects the appropriate tool, calls it, and incorporates the result into its reply. You do not need to invoke tools manually.
+
+<Tip>
+  Review which tools your agent has access to at any time by opening **Agents → [your agent] → Settings → Tools**. You can see all enabled connectors and toggle individual tools on or off. Disabling a tool removes it from the agent's context without deleting the connector configuration.
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Agents" icon="robot" href="/concepts/agents">
+    Learn how to create and configure the agents that use your connectors.
+  </Card>
+  <Card title="Overview" icon="map" href="/concepts/overview">
+    See how connectors fit into Octop's overall single-process architecture.
+  </Card>
+</CardGroup>

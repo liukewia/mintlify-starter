@@ -1,0 +1,52 @@
+---
+title: "Octop CLI：渠道、定时任务、插件与管理命令"
+sidebarTitle: "渠道与定时任务"
+description: "配置 IM 渠道，安排循环定时任务，安装与重新加载插件，并从 Octop 命令行执行管理操作。"
+---
+
+配置 IM 渠道，安排循环定时任务，安装与重新加载插件，并从 Octop 命令行执行管理操作。
+
+## `octop channel`
+
+```bash
+octop channel add --platform feishu --app-id xxx --app-secret xxx --agent my-agent
+octop channel list
+octop channel remove <channel-id>
+octop channel test <channel-id>
+```
+
+## `octop cron`
+
+```bash
+octop cron add --agent my-agent --schedule "0 9 * * *" --prompt "..."
+octop cron list
+octop cron pause <job-id>
+octop cron resume <job-id>
+octop cron delete <job-id>
+```
+
+## `octop plugin`
+
+```bash
+octop plugin install <plugin-name>
+octop plugin list
+octop plugin reload <plugin-name>
+octop plugin uninstall <plugin-name>
+```
+
+## 管理命令
+
+```bash
+# 列出用户
+octop admin user list
+
+# 重置用户密码
+octop admin user reset-password <username>
+
+# 查看审计日志
+octop admin audit-log
+```
+
+<Note>
+  大部分管理命令需要管理员权限。使用 `--token` 传递管理员认证令牌执行远程命令。
+</Note>

@@ -1,0 +1,123 @@
+---
+title: "Expert Templates and MBTI Personas in Octop"
+sidebarTitle: "Experts & Personas"
+description: "Octop ships 16 MBTI persona templates and a bundled expert library. Assign a persona to shape how your agent thinks and communicates."
+---
+
+Octop gives you two complementary tools for customising agent behaviour: **expert templates** and **MBTI personas**. Expert templates are pre-configured agent blueprints optimised for specific tasks — think of them as a fast path to a useful agent. MBTI personas are personality profiles that determine *how* an agent communicates: its tone, reasoning style, response format, and interpersonal approach. You can combine them freely — instantiate an expert template and then assign it any persona you choose.
+
+## Expert library
+
+Octop bundles an expert library of pre-configured agent templates. At boot, Octop scans the library directory and registers every template so it is immediately available to all users.
+
+### Browse and use expert templates
+
+<Steps>
+  <Step title="List available experts">
+    Run the following command to see all bundled templates and their IDs:
+
+    ```bash
+    octop agent experts
+    ```
+  </Step>
+  <Step title="Instantiate a template as an agent">
+    Create a new agent seeded with a template's configuration:
+
+    ```bash
+    octop agent from-expert <expert_id>
+    ```
+
+    This creates an independent agent. Modifying it later does not affect the source template.
+  </Step>
+  <Step title="Customise your new agent">
+    After instantiation, open the agent in the dashboard or use `octop agent` commands to adjust the system prompt, model, channels, and skills to suit your needs.
+  </Step>
+</Steps>
+
+<Tip>
+  Use expert templates as starting points rather than building agents from scratch. They already have sensible skill sets and system prompts for their intended tasks — you only need to tweak what doesn't fit.
+</Tip>
+
+## MBTI personas
+
+Octop ships 16 personality profiles based on the MBTI framework. When you assign a persona to an agent, Octop renders a `SOUL.md` file into the agent's workspace. That file becomes the backbone of the agent's system message — it defines answer style, approach to creativity, conflict handling, planning behaviour, and more.
+
+If you also set a **custom system prompt** on the agent, it is appended to the persona backbone. The persona provides the character; your system prompt adds the role-specific instructions on top.
+
+### All 16 persona codes
+
+| Code | Name | One-liner |
+|---|---|---|
+| `INTJ` | The Architect | Imaginative strategist with a plan for everything. |
+| `INTP` | The Logician | Innovative inventor with an unquenchable thirst for knowledge. |
+| `ENTJ` | The Commander | Bold, decisive, efficiency-obsessed; expects results. |
+| `ENTP` | The Debater | Inventive and quick-witted; loves contrary hypotheses. |
+| `INFJ` | The Advocate | Insightful and quietly purposeful; empathetic but focused. |
+| `INFP` | The Mediator | Idealistic and deeply curious; values authenticity. |
+| `ENFJ` | The Protagonist | Warm, articulate, people-oriented; coaches others toward their best. |
+| `ENFP` | The Campaigner | Enthusiastic, imaginative, generative; infectious brainstormer. |
+| `ISTJ` | The Logistician | Dependable, thorough, detail-oriented; tracks every commitment. |
+| `ISFJ` | The Defender | Quietly dedicated; remembers context; consistent. |
+| `ESTJ` | The Executive | Organized, direct, standards-driven; documents decisions. |
+| `ESFJ` | The Consul | Sociable, empathetic, harmony-seeking. |
+| `ISTP` | The Virtuoso | Hands-on; prefers concrete experiments; fixes things efficiently. |
+| `ISFP` | The Adventurer | Gentle, open-minded, supportive; explores without rushing. |
+| `ESTP` | The Entrepreneur | Action-oriented; cuts to what works right now; pragmatic. |
+| `ESFP` | The Entertainer | Expressive, spontaneous, engaging; resourceful improviser. |
+
+### Set a persona
+
+<Steps>
+  <Step title="Via the dashboard">
+    Open **Agents**, select your agent, and go to **Settings**. Choose a persona from the MBTI dropdown and click **Save**. The agent reloads automatically and picks up the new `SOUL.md`.
+  </Step>
+  <Step title="Via the CLI at creation time">
+    Pass `--persona-mbti` when creating an agent:
+
+    ```bash
+    octop agent create --name architect --persona-mbti INTJ
+    ```
+  </Step>
+  <Step title="Via the API">
+    Apply a persona to an existing agent and reload its runtime in one call:
+
+    ```bash
+    curl -X PUT http://127.0.0.1:8088/api/agents/architect/mbti \
+      -H "Authorization: Bearer $TOK" \
+      -H "Content-Type: application/json" \
+      -d '{ "code": "INTJ" }'
+    ```
+  </Step>
+</Steps>
+
+### Add a custom system prompt
+
+Your custom system prompt layers on top of the persona, not instead of it. Enter it in the **System Prompt** field of the agent settings page, or pass it during agent creation:
+
+```bash
+octop agent create \
+  --name researcher \
+  --persona-mbti INTP \
+  --system-prompt "Focus exclusively on peer-reviewed sources. Always cite your references."
+```
+
+<Note>
+  If you leave the persona unset, Octop falls back to a built-in default tone — warm, direct, and competent. You can still add a custom system prompt without selecting any MBTI code.
+</Note>
+
+### Discover your persona with the interactive quiz
+
+<Tip>
+  Not sure which MBTI code fits your agent? Use the **interactive MBTI quiz** in the dashboard. Navigate to **Agents → New Agent → Take the quiz** to answer a short set of questions. Octop recommends a persona code based on your answers, which you can accept or override.
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Agents" icon="robot" href="/concepts/agents">
+    Review agent attributes, lifecycle states, and creation options.
+  </Card>
+  <Card title="Channels" icon="comments" href="/concepts/channels">
+    Connect your persona-equipped agent to IM platforms.
+  </Card>
+</CardGroup>

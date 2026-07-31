@@ -1,0 +1,153 @@
+---
+title: 'Connect Your IDE to Octop Agents Using ACP Protocol'
+sidebarTitle: 'IDE Integration'
+description: 'Use ACP to let Zed, OpenCode, or Claude Code talk to your Octop agents, or have Octop delegate coding tasks to external AI coding tools.'
+---
+
+Octop supports the Agent Client Protocol (ACP) in two directions — expose Octop as an ACP server so your IDE can drive it directly, or have Octop delegate coding tasks outward to tools like OpenCode and Claude Code. Both directions use stdio JSON-RPC; Octop does not expose an HTTP ACP endpoint.
+
+## Two modes at a glance
+
+<CardGroup cols={2}>
+  <Card title="Inbound — IDE → Octop" icon="arrow-right-to-bracket">
+    Your IDE (Zed, OpenCode, …) uses your Octop agent as its coding brain. Run `octop acp` and point your IDE at it.
+  </Card>
+  <Card title="Outbound — Octop → coding tools" icon="arrow-right-from-bracket">
+    Octop delegates coding subtasks to OpenCode, Claude Code, CodeBuddy, or Codex via the built-in `acp_runner` tool.
+  </Card>
+</CardGroup>
+
+---
+
+## Inbound setup — IDE drives Octop
+
+Use this mode when you want your IDE to treat your Octop agent as its AI backend.
+
+<Steps>
+  <Step title="Ensure your agent has a model configured">
+    Open **Dashboard → Agents**, select your agent, and confirm a provider and model are set. `octop acp` boots the agent standalone — it must start successfully.
+  </Step>
+  <Step title="Start the ACP server">
+    Run the following in your terminal. This command is standalone and does **not** require `octop run` to be running:
+
+    ```bash
+    octop acp --agent main
+    ```
+  </Step>
+  <Step title="Configure your IDE">
+    Point your IDE to the `octop acp` command as its ACP server. See the Zed example below.
+  </Step>
+</Steps>
+
+### Zed configuration
+
+Add the following block to your Zed settings file:
+
+<CodeGroup>
+```json ~/.config/zed/settings.json
+{
+  "agent_servers": {
+    "Octop": {
+      "command": "octop",
+      "args": ["acp", "--agent", "main"],
+      "env": {}
+    }
+  }
+}
+```
+
+```json Dev checkout (uv)
+{
+  "agent_servers": {
+    "Octop": {
+      "command": "uv",
+      "args": ["run", "octop", "acp", "--agent", "main"],
+      "env": {}
+    }
+  }
+}
+```
+</CodeGroup>
+
+Once configured, create an agent thread in Zed and prompt as usual. Each session maps to a `thread_id`, and the agent workspace stays under `~/.octop/agents/<agent_id>/`.
+
+---
+
+## Outbound setup — Octop delegates to coding tools
+
+Use this mode when you want your Octop agent to hand off coding tasks to a specialist CLI tool.
+
+<Steps>
+  <Step title="Install the external CLI tool">
+    Install the CLI for the runner(s) you plan to use on the same machine where `octop run` executes. For example:
+
+    ```bash
+    # OpenCode
+    npm install -g opencode
+
+    # Claude Code (via npx — no install needed)
+    npx -y @zed-industries/claude-agent-acp
+
+    # Codex (via npx — no install needed)
+    npx -y @zed-industries/codex-acp
+    ```
+  </Step>
+  <Step title="Open the ACP dashboard">
+    In the web dashboard, navigate to **ACP** (`/acp`) in the sidebar.
+  </Step>
+  <Step title="Enable the runners you want">
+    Toggle on the runner cards for OpenCode, CodeBuddy, Claude Code, Codex, or any custom runner you have added.
+  </Step>
+  <Step title="Enable the acp_runner tool for your agent">
+    Switch to your agent in the top bar and turn on **Enable acp_runner tool** in the agent settings. This toggle is per-agent.
+  </Step>
+  <Step title="Delegate in chat">
+    In chat, ask your agent to use `acp_runner` — for example, *"Use acp_runner with opencode to find the README and summarise it."* Your agent handles the session lifecycle and surfaces any permission prompts inline.
+  </Step>
+</Steps>
+
+### Built-in runners
+
+| Runner ID | Command | Args |
+|-----------|---------|------|
+| `opencode` | `opencode` | `acp` |
+| `codebuddy` | `codebuddy` | `--acp` |
+| `claude_code` | `npx` | `-y`, `@zed-industries/claude-agent-acp` |
+| `codex` | `npx` | `-y`, `@zed-industries/codex-acp` |
+
+Built-in runners cannot be deleted. Add custom runners from the **Add runner** button on the ACP page.
+
+### `acp_runner` tool workflow
+
+When your agent uses `acp_runner`, it drives the external tool through these actions:
+
+| Action | Description |
+|--------|-------------|
+| `action=list` | List enabled runners and current session state |
+| `action=start` | Open a new session: specify `runner` + `message` (and optional `cwd`) |
+| `action=message` | Continue an open session with a follow-up message |
+| `action=respond` | Answer a `[permission_required]` prompt with the exact option id |
+| `action=status` | Check whether the session is open or waiting for a permission response |
+| `action=close` | End the session |
+
+Permission prompts from the external tool appear inline in chat. You can pick an option yourself or instruct the agent to call `action=respond` with the option id.
+
+<Tip>
+  If the runner executable is not on `PATH` in the environment where `octop run` starts (common with system services), set an absolute path in the runner's **command** field — for example `/usr/local/bin/opencode` instead of just `opencode`.
+</Tip>
+
+---
+
+## Troubleshooting
+
+<Accordion title="octop acp fails immediately">
+  The agent is not running or the `--agent` value is invalid. Open the dashboard, confirm the agent exists, and start it before running `octop acp`.
+</Accordion>
+
+<Accordion title="Runner start fails with 'Unknown runner'">
+  The ACP service cache is process-wide. After adding a new custom runner, restart `octop run` so the change takes effect.
+</Accordion>
+
+<Accordion title="External runner returns no text">
+  The CLI tool may have an authentication or quota issue. Check its own auth status — for example, run `codebuddy auth status` or verify your API key for the relevant service.
+</Accordion>

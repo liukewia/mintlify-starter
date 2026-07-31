@@ -1,0 +1,103 @@
+---
+title: 'Configure HTTPS and Register Octop as a System Service'
+sidebarTitle: 'TLS & Service'
+description: 'Run Octop over HTTPS using a self-signed or custom certificate, then register it as a persistent system service via systemd or launchd.'
+---
+
+Octop can serve traffic over HTTPS using either an auto-generated self-signed certificate or your own certificate and key. On Linux it registers itself as a **systemd** unit; on macOS it uses **launchd** — so it starts automatically on boot and restarts after crashes without any extra tooling.
+
+## Enable HTTPS
+
+### Option 1 — Self-signed certificate (quick start)
+
+Pass `--ssl` to `octop run` and Octop generates a certificate automatically, saving it under `~/.octop/ssl/`:
+
+```bash
+octop run --ssl
+```
+
+The generated certificate is self-signed, so browsers will show a security warning. This is fine for local development or internal tools where you control every client.
+
+### Option 2 — Custom certificate
+
+Point Octop at your own certificate and private key:
+
+```bash
+octop run --ssl \
+  --certfile /path/to/cert.pem \
+  --keyfile /path/to/key.pem
+```
+
+You can use a certificate issued by Let's Encrypt, your organisation's internal CA, or any other trusted authority.
+
+### Option 3 — Persist TLS settings in config.json
+
+To avoid passing flags on every start, write the TLS configuration into `~/.octop/config.json`:
+
+```json
+{
+  "tls": {
+    "enabled": true,
+    "cert_file": "/etc/ssl/octop/cert.pem",
+    "key_file": "/etc/ssl/octop/key.pem"
+  }
+}
+```
+
+Octop picks this up automatically on every subsequent start, including when running as a system service.
+
+<Note>
+After updating `config.json`, restart the server for the TLS change to take effect: `octop service restart`.
+</Note>
+
+## Register as a system service
+
+The `octop service` subcommand manages the platform-native service unit for you — systemd on Linux and launchd on macOS.
+
+<Steps>
+
+### Install and start the service
+
+```bash
+octop service start
+```
+
+This command registers the service unit with your init system and immediately starts Octop. On macOS the launchd plist is written to `~/Library/LaunchAgents/`.
+
+### Verify the service is running
+
+```bash
+octop service status
+```
+
+The command prints the current service state, recent log lines, and the URL Octop is listening on.
+
+### Stop the service
+
+```bash
+octop service stop
+```
+
+### Restart the service
+
+Use this after changing `config.json` or upgrading Octop:
+
+```bash
+octop service restart
+```
+
+</Steps>
+
+<Note>
+On Linux, `octop service start` defaults to a **user-level** systemd unit (`systemctl --user`), which runs under your own account and does not require root. To install a system-wide unit that starts before login, pass `--scope system`:
+
+```bash
+sudo octop service start --scope system
+```
+
+Pass `--scope user` to explicitly use the user unit.
+</Note>
+
+<Tip>
+After enabling the service, run `octop service status` to confirm Octop started cleanly. The output includes the last few log lines, making it the fastest way to catch certificate path errors or port conflicts before you open a browser.
+</Tip>

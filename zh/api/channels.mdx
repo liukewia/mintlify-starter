@@ -1,0 +1,122 @@
+---
+title: "渠道 API：在 Octop 中将智能体连接到 IM 平台"
+sidebarTitle: "渠道"
+description: "使用 Octop 的 /api/agents/{agent_id}/channels 端点，将智能体连接到 Discord、飞书、钉钉、企业微信等 IM 平台。"
+---
+
+将智能体连接到即时通信平台，以便它们可以发送和接收消息。
+
+## 基地路径
+
+```text
+/api/agents/{agent_id}/channels
+```
+
+## 端点
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| GET | `/agents/{aid}/channels` | 列出智能体的渠道 |
+| POST | `/agents/{aid}/channels` | 添加新渠道 |
+| GET | `/agents/{aid}/channels/{cid}` | 获取渠道详情 |
+| PATCH | `/agents/{aid}/channels/{cid}` | 更新渠道配置 |
+| DELETE | `/agents/{aid}/channels/{cid}` | 删除渠道 |
+| POST | `/agents/{aid}/channels/{cid}/test` | 测试渠道连接 |
+
+## 创建渠道
+
+### Discord
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/channels \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "kind": "discord",
+    "name": "主 Discord 机器人",
+    "config": {"token": "your-discord-bot-token"}
+  }'
+```
+
+### 飞书
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/channels \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "kind": "feishu",
+    "name": "团队飞书机器人",
+    "config": {"app_id": "cli_xxx", "app_secret": "yyy"}
+  }'
+```
+
+两种情况成功后都返回 `201 Created`。
+
+<Warning>
+  若 `kind` 不是支持的值，请求将以 `400 CHANNEL_KIND_UNSUPPORTED` 失败。支持的类型为 `discord`、`feishu`、`dingtalk`、`wecom`、`weixin` 和 `yuanbao`。
+</Warning>
+
+## 测试渠道
+
+验证已保存的渠道是否可以成功连接：
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/channels/5/test \
+  -H 'Authorization: Bearer <token>'
+```
+
+响应：
+
+```json
+{"ok": true}
+```
+
+或失败时：
+
+```json
+{"ok": false, "error": "无法连接到 Discord 门户"}
+```
+
+## 更新渠道
+
+```bash
+curl -X PATCH http://127.0.0.1:8088/api/agents/1/channels/5 \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "已重命名的渠道"}'
+```
+
+可以只传递 `name` 或 `config` 中需要修改的字段子集。
+
+## 删除渠道
+
+```bash
+curl -X DELETE http://127.0.0.1:8088/api/agents/1/channels/5 \
+  -H 'Authorization: Bearer <token>'
+```
+
+成功时返回 `204 No Content`。
+
+## 探测配置（不保存）
+
+在正式持久化之前验证渠道配置：
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/channels/probe \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"kind": "discord", "config": {"token": "your-discord-bot-token"}}'
+```
+
+响应：
+
+```json
+{"ok": true}
+```
+
+或失败时：
+
+```json
+{"ok": false, "reason": "invalid_token", "detail": "Discord 拒绝了提交的令牌"}
+```

@@ -1,0 +1,84 @@
+---
+title: 'Octop Environment Variables: Complete Config Reference'
+sidebarTitle: 'Env Variables'
+description: 'Override any Octop config.json field with an environment variable. Ideal for Docker, CI pipelines, and keeping secrets off the filesystem.'
+---
+
+Every setting in `config.json` has a matching environment variable. When you set one, it takes priority over the value in the file — the file itself is never modified. This makes environment variables the preferred approach for Docker deployments, CI pipelines, and any situation where you want to keep secrets out of the filesystem.
+
+## Variable reference
+
+| Variable | Type | Default | Description |
+|---|---|---|---|
+| `OCTOP_HOME` | path | `~/.octop` | Installation root. All data — database, secrets, agent workspaces, plugins — is stored here. |
+| `OCTOP_BIND_HOST` | string | `127.0.0.1` | Interface Octop listens on. Set to `0.0.0.0` for LAN or container access. |
+| `OCTOP_PORT` | int | `8088` | TCP port Octop binds to. |
+| `OCTOP_LOG_LEVEL` | string | `info` | Log verbosity: `debug`, `info`, `warning`, or `error`. |
+| `OCTOP_ACCESS_TOKEN_TTL` | int (seconds) | `86400` | JWT access-token lifetime. Default is 24 hours. |
+| `OCTOP_LOGIN_MAX_ATTEMPTS` | int | `5` | Failed login attempts before an account is locked out. |
+| `OCTOP_LOGIN_LOCKOUT_SECONDS` | int | `900` | How long (seconds) a lockout lasts after too many failed attempts. |
+| `OCTOP_DEFAULT_TIMEZONE` | IANA tz | `Asia/Shanghai` | Timezone for dashboard timestamps, cron scheduling, and the agent harness. |
+| `OCTOP_CORS_ORIGINS` | comma-sep | _(empty)_ | Comma-separated list of origins permitted to make cross-origin requests. |
+| `OCTOP_ENABLE_DASHBOARD` | bool | `true` | Serve the built-in React SPA at `/`. |
+| `OCTOP_ENABLE_API_DOCS` | bool | `false` | Expose the interactive Scalar API docs at `/api/docs`. |
+| `OCTOP_REQUIRE_SETUP_PASSWORD` | bool | `true` | Require a password gate during the first-run setup wizard. Set to `false` for unattended bootstraps using `OCTOP_ADMIN_USERNAME` / `OCTOP_ADMIN_PASSWORD`. |
+| `OCTOP_DATABASE_URL` | string | _(empty)_ | Full PostgreSQL DSN (e.g. `postgresql://user:pass@host:5432/octop`). Overrides all individual `OCTOP_DATABASE_*` fields below. |
+| `OCTOP_DATABASE_DRIVER` | string | `sqlite` | Storage backend: `sqlite` or `postgresql`. |
+| `OCTOP_DATABASE_SQLITE_PATH` | path | `octop.db` | SQLite file path. Relative paths resolve from `OCTOP_HOME`. |
+| `OCTOP_DATABASE_HOST` | string | `127.0.0.1` | PostgreSQL host. Used only when `OCTOP_DATABASE_DRIVER=postgresql`. |
+| `OCTOP_DATABASE_PORT` | int | `5432` | PostgreSQL port. |
+| `OCTOP_DATABASE_NAME` | string | `octop` | PostgreSQL database name. |
+| `OCTOP_DATABASE_USER` | string | `octop` | PostgreSQL user. |
+| `OCTOP_DATABASE_PASSWORD` | string | _(empty)_ | PostgreSQL password. Always set this via environment rather than `config.json` in production. |
+| `OCTOP_ADMIN_USERNAME` | string | _(empty)_ | Pre-fills the first admin username during `octop init`. Use with `OCTOP_ADMIN_PASSWORD` for unattended bootstraps. |
+| `OCTOP_ADMIN_PASSWORD` | string | _(empty)_ | Pre-fills the first admin password during `octop init`. |
+| `OCTOP_ADMIN_DISPLAY_NAME` | string | _(empty)_ | Pre-fills the display name of the first admin account during `octop init`. |
+| `OCTOP_USER` | string | _(empty)_ | Default `--user` value for CLI subcommands, so you can omit the flag. |
+| `OCTOP_AGENT` | string | _(empty)_ | Default `--agent` value for CLI subcommands. |
+| `OCTOP_SERVICE_MODE` | string | _(auto)_ | Override the service backend used by `octop service`. Accepted values: `systemd` or `launchd`. Normally auto-detected from the host OS. |
+| `OCTOP_SERVICE_SCOPE` | string | _(auto)_ | Control whether `octop service` installs a user-level or system-level unit on Linux. Accepted values: `user` or `system`. Equivalent to passing `--scope` to `octop service start`. |
+
+## Docker `.env` example
+
+Create a `.env` file next to your `docker-compose.yml` and populate the variables relevant to your deployment:
+
+<CodeGroup>
+
+```bash .env
+# Network
+OCTOP_BIND_HOST=0.0.0.0
+OCTOP_PORT=8088
+
+# Database (PostgreSQL)
+OCTOP_DATABASE_DRIVER=postgresql
+OCTOP_DATABASE_HOST=postgres
+OCTOP_DATABASE_PORT=5432
+OCTOP_DATABASE_NAME=octop
+OCTOP_DATABASE_USER=octop
+OCTOP_DATABASE_PASSWORD=change-me-in-production
+
+# First-run admin bootstrap
+OCTOP_ADMIN_USERNAME=admin
+OCTOP_ADMIN_PASSWORD=change-me-in-production
+
+# Timezone and logging
+OCTOP_DEFAULT_TIMEZONE=America/New_York
+OCTOP_LOG_LEVEL=info
+```
+
+```yaml docker-compose.yml (snippet)
+services:
+  octop:
+    image: octop:latest
+    env_file: .env
+    ports:
+      - "${OCTOP_PORT:-8088}:8088"
+    volumes:
+      - octop_data:/root/.octop
+```
+
+</CodeGroup>
+
+<Warning>
+Never store `OCTOP_DATABASE_PASSWORD` or `OCTOP_ADMIN_PASSWORD` directly in `config.json` for production deployments. Keep them in environment variables or a secrets manager, and ensure your `.env` file is excluded from version control (add it to `.gitignore`). Restrict `config.json` file permissions to the service account only (`chmod 600 ~/.octop/config.json`).
+</Warning>

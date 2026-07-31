@@ -1,0 +1,46 @@
+---
+title: "Octop CLI 概览：所有命令与传输模式"
+sidebarTitle: "概览"
+description: "关于 octop CLI 的完整参考：全局选项、传输模式，以及管理 Octop 服务器的每一个顶级命令。"
+---
+
+`octop` CLI 是您与 Octop 服务器交互的主要入口——启动服务器、管理智能体、配置提供商、设置渠道和定时任务——均可以在本地或远程服务器上执行。
+
+## 全局选项
+
+| 选项 | 描述 |
+| --- | --- |
+| `--host` | 目标服务器地址（默认为本地） |
+| `--port` | 目标服务器端口 |
+| `--token` | 用于远程命令的认证令牌 |
+| `--json` | 以 JSON 格式输出，便于脚本处理 |
+| `--version` | 显示安装的 Octop 版本 |
+
+## 传输模式
+
+CLI 可以以两种方式与 Octop 服务器通信：
+
+- **本地** —— 直接读写 `~/.octop/octop.db`（仅适用于服务器未运行时）
+- **远程** —— 通过 HTTP API 与正在运行的服务器通信，需要认证令牌
+
+## 命令分类
+
+<CardGroup cols={2}>
+  <Card title="服务器命令" icon="server" href="/zh/cli/server-commands">
+    `init`、`run`、`service`、`update`
+  </Card>
+
+  <Card title="智能体命令" icon="user-robot" href="/zh/cli/agent-commands">
+    `agent`、`chat`、`skill`、`provider`
+  </Card>
+
+  <Card title="渠道与定时任务" icon="comments" href="/zh/cli/channel-cron-commands">
+    `channel`、`cron`、`plugin`、管理命令
+  </Card>
+</CardGroup>
+
+查看安装的 Octop 版本：
+
+```bash
+octop --version
+```

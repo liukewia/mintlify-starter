@@ -1,0 +1,161 @@
+---
+title: "Set Up IM Channels in Octop: Feishu, DingTalk, Discord"
+sidebarTitle: "IM Channels"
+description: "Connect Octop agents to Feishu, DingTalk, QQ, Discord, or WeCom so your team can message AI agents from the platforms they already use every day."
+---
+
+IM channels let your team communicate with Octop agents through the chat tools they already use every day. When someone sends a message on Feishu, DingTalk, Discord, or WeCom, Octop routes it directly to the linked agent and replies in the same thread — no need to open the web dashboard. Each channel is tied to exactly one agent, giving you precise control over which agent handles which platform.
+
+## Platform setup
+
+<Tabs>
+  <Tab title="Feishu">
+    ### Prerequisites
+
+    Before you begin, create a Feishu app in the [Feishu Open Platform](https://open.feishu.cn/) and note down:
+
+    - **App ID**
+    - **App Secret**
+
+    ### Connect via the dashboard
+
+    <Steps>
+      <Step title="Open the Channels panel">
+        In the dashboard, go to **Agents → [your agent] → Channels** and click **Add Channel**, then select **Feishu**.
+      </Step>
+      <Step title="Enter your app credentials">
+        Type in the **App ID** and **App Secret** from your Feishu app settings.
+      </Step>
+      <Step title="Register the webhook">
+        Copy the webhook URL shown by Octop and paste it into the **Event subscription** section of your Feishu app configuration. Save the Feishu app settings.
+      </Step>
+      <Step title="Test the channel">
+        Click **Test** in Octop to confirm the channel is receiving events correctly.
+      </Step>
+    </Steps>
+
+    ### Connect via the CLI
+
+    If you prefer a terminal-based flow, run the guided setup wizard:
+
+    ```bash
+    octop channel feishu-setup
+    ```
+
+    The wizard walks you through entering credentials and registering the webhook automatically.
+  </Tab>
+
+  <Tab title="DingTalk">
+    ### Prerequisites
+
+    Create a DingTalk bot in the [DingTalk Open Platform](https://open.dingtalk.com/) and collect:
+
+    - **App Key**
+    - **App Secret**
+
+    ### Connect via the dashboard
+
+    <Steps>
+      <Step title="Open the Channels panel">
+        In the dashboard, go to **Agents → [your agent] → Channels** and click **Add Channel**, then select **DingTalk**.
+      </Step>
+      <Step title="Enter your bot credentials">
+        Enter the **App Key** and **App Secret** from your DingTalk bot configuration.
+      </Step>
+      <Step title="Configure the webhook">
+        Copy the callback URL provided by Octop and add it to the **Message receive mode** settings in your DingTalk app. Enable the relevant event scopes and save.
+      </Step>
+      <Step title="Test the channel">
+        Click **Test** in Octop to verify that messages flow through correctly.
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Discord">
+    ### Prerequisites
+
+    Create a Discord application and bot in the [Discord Developer Portal](https://discord.com/developers/applications) and obtain:
+
+    - **Bot Token**
+
+    Make sure your bot has the **Message Content Intent** enabled under the bot's settings in the portal.
+
+    ### Connect via the dashboard
+
+    <Steps>
+      <Step title="Open the Channels panel">
+        In the dashboard, go to **Agents → [your agent] → Channels** and click **Add Channel**, then select **Discord**.
+      </Step>
+      <Step title="Enter the bot token">
+        Paste your **Bot Token** into the provided field.
+      </Step>
+      <Step title="Test the channel">
+        Click **Test** to confirm that the bot can connect to Discord and receive messages.
+      </Step>
+    </Steps>
+
+    <Warning>
+      Keep your Bot Token secret. If it is ever exposed, regenerate it immediately in the Discord Developer Portal and update the channel in Octop.
+    </Warning>
+  </Tab>
+
+  <Tab title="WeCom">
+    ### Prerequisites
+
+    Set up a WeCom (企业微信) application and gather:
+
+    - **Corp ID** (企业ID)
+    - **Agent Secret** (应用Secret)
+
+    ### Connect via the dashboard
+
+    <Steps>
+      <Step title="Open the Channels panel">
+        In the dashboard, go to **Agents → [your agent] → Channels** and click **Add Channel**, then select **WeCom**.
+      </Step>
+      <Step title="Enter your credentials">
+        Enter the **Corp ID** and **Agent Secret** from your WeCom application settings.
+      </Step>
+      <Step title="Test the channel">
+        Click **Test** to verify the connection is active and the agent can receive WeCom messages.
+      </Step>
+    </Steps>
+
+    ### QR-code login flow (alternative)
+
+    For a quicker bind using a QR-code scan, use the CLI:
+
+    ```bash
+    octop channel bind
+    ```
+
+    Scan the displayed QR code with the WeCom mobile app to authenticate and link the channel in one step.
+  </Tab>
+</Tabs>
+
+## Manage channels from the CLI
+
+Once channels are configured, use these commands for day-to-day management:
+
+<CodeGroup>
+  ```bash List channels
+  # Show all channels attached to a specific agent
+  octop channel list --agent <id>
+  ```
+
+  ```bash Test a channel
+  # Send a test event through a channel to verify it is working
+  octop channel test --agent <id>
+  ```
+
+  ```bash Delete a channel
+  # Permanently remove a channel from an agent
+  octop channel delete --agent <id>
+  ```
+</CodeGroup>
+
+Replace `<id>` with the agent's identifier, which you can look up with `octop agent list`.
+
+<Note>
+  Each agent can have multiple channels active at the same time — for example, a single agent can simultaneously handle messages from Feishu, DingTalk, and Discord. All messages are processed through the same underlying agent, so the conversation context remains unified regardless of which platform a user messages from.
+</Note>

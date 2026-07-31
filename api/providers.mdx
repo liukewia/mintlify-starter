@@ -1,0 +1,137 @@
+---
+title: 'Octop Providers API: Configure LLM Providers and Models'
+sidebarTitle: 'Providers'
+description: 'Add, list, and remove LLM provider configurations through the Octop API. Supports OpenAI-compatible, DashScope, Ollama, and custom endpoints.'
+---
+
+The Providers API lets you configure which LLM providers and models your agents use. Providers can be per-user (created by any authenticated user and visible only to them) or admin-global (created under `/api/admin/providers` and shared across all accounts). All agents reference providers by name when selecting a model.
+
+## Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/providers` | user | List providers visible to current user |
+| `POST` | `/providers` | user | Create a per-user provider |
+| `GET` | `/providers/{id}` | user | Get provider details |
+| `PATCH` | `/providers/{id}` | owner | Update provider config |
+| `DELETE` | `/providers/{id}` | owner | Delete provider |
+| `POST` | `/providers/{id}/test` | user | Ping the provider |
+| `POST` | `/admin/providers` | admin | Create a global shared provider |
+| `PATCH` | `/admin/providers/{id}` | admin | Update a shared provider |
+| `DELETE` | `/admin/providers/{id}` | admin | Delete a shared provider |
+| `GET` | `/models` | user | List resolved models across all enabled providers |
+| `GET` | `/models/active` | user | Get the currently active model |
+| `PUT` | `/models/active` | admin | Set the active model |
+
+## Create a provider
+
+Provide a `name`, a `kind`, and the connection details for your chosen LLM service.
+
+<CodeGroup>
+```bash OpenAI
+curl -X POST http://127.0.0.1:8088/api/providers \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "openai",
+    "kind": "openai",
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "sk-..."
+  }'
+```
+
+```bash Ollama (local)
+curl -X POST http://127.0.0.1:8088/api/providers \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "local-ollama",
+    "kind": "ollama",
+    "base_url": "http://127.0.0.1:11434"
+  }'
+```
+
+```bash DashScope
+curl -X POST http://127.0.0.1:8088/api/providers \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "dashscope",
+    "kind": "dashscope",
+    "api_key": "sk-..."
+  }'
+```
+</CodeGroup>
+
+<Note>
+  API keys are stored encrypted at rest and will not appear in plaintext in any `GET` response. If you need to update a key, send a `PATCH` request with the new `api_key` value.
+</Note>
+
+## Test a provider
+
+After creating a provider, verify the connection is healthy by calling its `test` endpoint. Octop sends a minimal one-token ping with a 10-second timeout.
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/providers/openai/test \
+  -H 'Authorization: Bearer $TOKEN'
+```
+
+```json Response (success)
+{"ok": true, "latency_ms": 312}
+```
+
+```json Response (failure)
+{"ok": false, "error": "Authentication failed: invalid API key"}
+```
+</CodeGroup>
+
+## List resolved models
+
+`GET /models` returns the combined list of models available across all providers enabled for your account. Use the `model` values from this list when creating or updating agents.
+
+<CodeGroup>
+```bash cURL
+curl http://127.0.0.1:8088/api/models \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+## Set the active model
+
+The active model is the system-wide default used when an agent does not specify a `default_model`. Only admins can change it.
+
+<CodeGroup>
+```bash cURL
+curl -X PUT http://127.0.0.1:8088/api/models/active \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"provider_name": "openai", "model": "gpt-4o"}'
+```
+</CodeGroup>
+
+<Warning>
+  Deleting a provider that is still referenced by one or more agents returns `409 PROVIDER_REFERENCED`. Update or delete the dependent agents before removing the provider.
+</Warning>
+
+<Expandable title="Admin-managed shared providers">
+  Admins can create providers that are visible to every user by posting to `/api/admin/providers` instead of `/api/providers`. The request body is identical. Use `PATCH /admin/providers/{id}` and `DELETE /admin/providers/{id}` to manage these shared rows. Regular users can list and test shared providers but cannot modify or delete them.
+</Expandable>
+
+## ACP (Agent Client Protocol)
+
+The ACP endpoints let you configure external runner connections that agents can invoke as tools. These endpoints are separate from provider configuration but live in the same authentication context.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/acp` | user | List your global runners |
+| `PUT` | `/acp` | user | Replace the global runner list |
+| `GET` | `/acp/{runner_name}` | user | Get a specific runner |
+| `PUT` | `/acp/{runner_name}` | user | Upsert a runner |
+| `DELETE` | `/acp/{runner_name}` | user | Delete a custom runner |
+| `GET` | `/agents/{aid}/acp` | owner | Global runners + per-agent tool-enabled flag |
+| `PUT` | `/agents/{aid}/acp` | owner | Update tool-enabled flag and optionally the global list |
+
+<Tip>
+  See the ACP integration guide for the full runner object schema and setup examples.
+</Tip>

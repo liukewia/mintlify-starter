@@ -1,0 +1,136 @@
+---
+title: 'Octop Server Commands: init, run, service, and update'
+sidebarTitle: 'Server Commands'
+description: 'Bootstrap a new install, start the server in the foreground, manage it as a system service, and update to the latest Octop release.'
+---
+
+These commands control the Octop server lifecycle — bootstrapping a fresh install, starting the server process, registering it as a system service, and keeping it up to date. Run them in order the first time you set up Octop, and return to them whenever you need to manage or upgrade your deployment.
+
+## `octop init`
+
+Bootstrap `~/.octop/` with the SQLite database, JWT secret, and first admin account. Run this once before starting the server for the first time.
+
+<CodeGroup>
+```bash Interactive setup
+octop init
+```
+```bash Non-interactive setup
+octop init --admin-username admin --admin-password mypassword --yes
+```
+</CodeGroup>
+
+### Options
+
+| Option | Env var | Description |
+|---|---|---|
+| `--admin-username TEXT` | `OCTOP_ADMIN_USERNAME` | Username for the first admin account |
+| `--admin-password TEXT` | `OCTOP_ADMIN_PASSWORD` | Password for the first admin account |
+| `--admin-display-name TEXT` | `OCTOP_ADMIN_DISPLAY_NAME` | Display name for the first admin account |
+| `--force` | — | Wipe existing `~/.octop/` contents before bootstrapping |
+| `--yes` | — | Skip all interactive prompts |
+
+<Note>
+  `octop init` is idempotent on the database — running it again on an existing install is safe and only applies missing migrations. Use `--force` to wipe `~/.octop/` and start completely fresh.
+</Note>
+
+---
+
+## `octop run`
+
+Start the Octop server in the foreground using uvicorn. This serves the web dashboard, HTTP/SSE API, and IM channel listeners on a single process.
+
+<CodeGroup>
+```bash Default
+octop run
+```
+```bash Custom host and port
+octop run --host 0.0.0.0 --port 8088
+```
+```bash HTTPS with self-signed certificate
+octop run --ssl
+```
+```bash HTTPS with your own certificate
+octop run --ssl --certfile /path/cert.pem --keyfile /path/key.pem
+```
+</CodeGroup>
+
+### Options
+
+| Option | Default | Description |
+|---|---|---|
+| `--host TEXT` | `127.0.0.1` | Bind host (overrides `OCTOP_BIND_HOST`) |
+| `--port INTEGER` | `8088` | Listen port (overrides `OCTOP_PORT`) |
+| `--reload / --no-reload` | off | Enable uvicorn auto-reload (development only) |
+| `--ssl / --no-ssl` | off | Enable HTTPS |
+| `--certfile PATH` | — | TLS certificate in PEM format |
+| `--keyfile PATH` | — | TLS private key in PEM format |
+| `--log-level` | `info` | One of: `debug`, `info`, `warning`, `error` |
+
+<Warning>
+  Do not use `--reload` in production. Auto-reload restarts the process on every file change and is intended for local development only.
+</Warning>
+
+---
+
+## `octop service`
+
+Register Octop as a system service so it starts automatically on boot and runs in the background.
+
+<CodeGroup>
+```bash Start (and install if missing)
+octop service start
+```
+```bash Stop
+octop service stop
+```
+```bash Restart
+octop service restart
+```
+```bash Check status and health
+octop service status
+```
+</CodeGroup>
+
+<Note>
+  `octop service` auto-detects the platform: it uses **systemd** on Linux and **launchd** on macOS. The `status` subcommand probes the HTTP health endpoint and prints journal or log hints on failure. Force the scope with `--scope user` or `--scope system` (or via `OCTOP_SERVICE_SCOPE`).
+</Note>
+
+---
+
+## `octop update`
+
+Check for a newer Octop release on PyPI and install it automatically.
+
+<CodeGroup>
+```bash Check and install
+octop update
+```
+```bash Check only, do not install
+octop update --check
+```
+</CodeGroup>
+
+### Options
+
+| Option | Description |
+|---|---|
+| `--check / --no-check` | Report the available version without installing |
+| `--channel TEXT` | Release channel to check: `pypi` (default), `testpypi`, or a custom index URL |
+
+---
+
+## `octop user login`
+
+Attach the CLI to a running server by exchanging credentials for a JWT. The token is stored in `~/.octop/cli_state.json` so that Attach-mode commands (`channel test`, `models ollama-*`, etc.) can reach the server without re-authenticating.
+
+<CodeGroup>
+```bash Login as admin
+octop user login --username admin
+```
+</CodeGroup>
+
+After a successful login, the JWT is written to `~/.octop/cli_state.json`. Delete that file or run `octop clean --state` to log out.
+
+<Tip>
+  All other `octop user` subcommands (`create`, `list`, `passwd`, `role`, `disable`, `delete`) operate directly against the local SQLite database and do not require a running server or a prior login.
+</Tip>

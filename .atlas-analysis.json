@@ -1,0 +1,129 @@
+{
+  "projectType": "saas",
+  "projectName": "Octop",
+  "projectDescription": "A self-hosted, multi-user AI assistant platform with multi-agent support, IM channel integrations, browser automation, and IDE connectivity.",
+  "theme": "almond",
+  "primaryColor": "#fbde58",
+  "lightColor": "#d0d6d4",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Docs",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "quickstart-docker"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/overview",
+              "concepts/agents",
+              "concepts/experts-personas",
+              "concepts/channels",
+              "concepts/connectors"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/llm-providers",
+              "guides/im-channels",
+              "guides/cron-jobs",
+              "guides/acp-ide",
+              "guides/browser-terminal",
+              "guides/backup-restore"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/config-file",
+              "configuration/environment-variables",
+              "configuration/tls-service",
+              "configuration/data-directory"
+            ]
+          },
+          {
+            "group": "CLI Reference",
+            "pages": [
+              "cli/overview",
+              "cli/server-commands",
+              "cli/agent-commands",
+              "cli/channel-cron-commands"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api/agents",
+              "api/chat",
+              "api/channels",
+              "api/providers",
+              "api/cron",
+              "api/users-admin"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Multi-user, multi-agent architecture with per-user agent isolation",
+    "16 MBTI persona templates plus custom system prompts",
+    "IM channel integrations: Feishu, DingTalk, QQ, Discord, WeCom",
+    "ACP (Agent Client Protocol) for bidirectional IDE integration",
+    "Connector ecosystem with OAuth and MCP gateway support",
+    "Browser automation and remote desktop via headless Chromium",
+    "Scheduled cron jobs with natural-language triggers",
+    "Pluggable LLM providers: OpenAI-compatible, DashScope, Ollama",
+    "Self-hosted with all data stored locally under ~/.octop/",
+    "Single-command startup with system service registration"
+  ],
+  "publicApiSurface": [
+    "POST /api/auth/login",
+    "GET /api/auth/me",
+    "GET /api/agents",
+    "POST /api/agents",
+    "POST /api/agents/{id}/start",
+    "POST /api/agents/{id}/stop",
+    "WS /api/agents/{id}/chat/ws",
+    "GET /api/agents/{id}/chat/sessions",
+    "POST /api/agents/{aid}/channels",
+    "POST /api/agents/{aid}/cron",
+    "GET /api/providers",
+    "GET /api/acp",
+    "PUT /api/acp",
+    "GET /api/mbti/codes",
+    "GET /api/health",
+    "octop init",
+    "octop run",
+    "octop service start/stop",
+    "octop agent create/list/start/stop",
+    "octop chats repl/send",
+    "octop channel install",
+    "octop cron create",
+    "octop models config",
+    "octop skills enable/disable",
+    "octop acp",
+    "octop backup create/restore",
+    "octop update"
+  ]
+}

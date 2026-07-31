@@ -1,0 +1,163 @@
+---
+title: 'Get Started with Octop: Install and Run in Minutes'
+sidebarTitle: 'Quickstart'
+description: 'Install Octop on macOS, Linux, or Windows, run octop init to create your local database and admin account, then start chatting in minutes.'
+---
+
+Octop is a self-hosted, multi-user AI assistant platform that runs entirely on your own machine. In this guide, you will install the `octop` CLI, initialize the local database and admin account, start the server, and send your first message — all in under five minutes.
+
+<Steps>
+
+  <Step title="Install Octop">
+    Choose the installer that matches your platform. Every method provisions an isolated environment at `~/.octop/venv` and adds `octop` to your PATH via `~/.octop/bin` — no system Python is required.
+
+    <CodeGroup>
+
+    ```bash macOS / Linux
+    curl -fsSL https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.sh | bash
+    ```
+
+    ```powershell Windows (PowerShell)
+    irm https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.ps1 | iex
+    ```
+
+    ```bat Windows (cmd)
+    curl -fsSL https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.bat -o install.bat
+    install.bat
+    ```
+
+    ```bash PyPI (existing Python)
+    pip install octop
+    ```
+
+    </CodeGroup>
+  </Step>
+
+  <Step title="Reload your shell">
+    Open a **new terminal**, or reload your current shell session so that `~/.octop/bin` is picked up from your PATH:
+
+    <CodeGroup>
+
+    ```bash Zsh
+    source ~/.zshrc
+    ```
+
+    ```bash Bash
+    source ~/.bashrc
+    ```
+
+    </CodeGroup>
+
+    <Note>
+      On Windows the installer updates your user PATH automatically — close and reopen your terminal to apply the change. No shell reload command is needed.
+    </Note>
+
+    Confirm the installation succeeded:
+
+    ```bash
+    octop --version
+    ```
+  </Step>
+
+  <Step title="Initialize Octop">
+    Run the interactive setup wizard to bootstrap your local environment:
+
+    ```bash
+    octop init
+    ```
+
+    The wizard walks you through three steps:
+
+    1. **Database** — creates a SQLite database at `~/.octop/octop.db`.
+    2. **JWT secret** — generates a 32-byte random secret at `~/.octop/secrets/jwt_secret`.
+    3. **Admin account** — prompts you to choose a username and password for the first administrator.
+
+    All data stays on your machine under `~/.octop/`.
+  </Step>
+
+  <Step title="Start the server">
+    Launch Octop in the foreground:
+
+    ```bash
+    octop run
+    ```
+
+    Once you see the server ready message, open your browser and navigate to:
+
+    ```
+    http://127.0.0.1:8088
+    ```
+
+    Log in with the default credentials:
+
+    | Field | Default value |
+    |-------|--------------|
+    | Username | `admin` |
+    | Password | `octop` |
+
+    <Warning>
+      Change the default password immediately after your first login. Go to **Settings → Security** in the dashboard to update it.
+    </Warning>
+
+    To bind on all network interfaces or use a different port, pass flags directly:
+
+    ```bash
+    octop run --host 0.0.0.0 --port 9000
+    ```
+
+    To run Octop as a persistent background service (systemd, launchd, or Windows Service), use:
+
+    ```bash
+    octop service start
+    ```
+  </Step>
+
+  <Step title="Configure a model provider">
+    Octop supports OpenAI-compatible APIs, DashScope (Qwen), Ollama, and more. Add your first provider using either the CLI or the dashboard.
+
+    <CodeGroup>
+
+    ```bash CLI
+    octop models config
+    ```
+
+    ```text Dashboard
+    Settings → Providers → Add Provider
+    ```
+
+    </CodeGroup>
+
+    Select a provider preset, enter your API key, and save. The provider becomes available to all agents you create under your account.
+  </Step>
+
+  <Step title="Start chatting">
+    Open the **Chat** section in the web dashboard at `http://127.0.0.1:8088`. Select your agent (a default `main` agent is created by `octop init`) and send your first message.
+
+    You can also start a conversation directly from the terminal:
+
+    ```bash
+    octop chat
+    ```
+
+    Your agent now has access to all the skills, connectors, and tools you configure going forward.
+  </Step>
+
+</Steps>
+
+<Note>
+  The base installer sets up the core platform. To unlock additional capabilities, re-run the installer with an `--extras` flag:
+
+  ```bash
+  # Browser automation (Playwright Chromium)
+  curl -fsSL https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.sh | bash -s -- --extras browser
+
+  # Feishu channel support
+  curl -fsSL https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.sh | bash -s -- --extras channels-feishu
+  ```
+
+  Browser automation enables headless Chromium sessions for web tasks and screenshots. The Feishu extra adds a channel bridge so your agents can receive and reply to Feishu messages.
+</Note>
+
+<Tip>
+  For production deployments or multi-user setups, use Docker Compose instead of a bare-metal install. See the [Docker Setup guide](/quickstart-docker) to get Octop running with a single `docker compose` command, persistent volumes, and easy environment-variable configuration.
+</Tip>

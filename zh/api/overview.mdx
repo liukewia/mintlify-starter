@@ -1,0 +1,116 @@
+---
+title: "Octop REST 与 WebSocket API：端点与访问指南"
+sidebarTitle: "概览"
+description: "Octop 在 /api 暴露完整的 REST API 和 WebSocket 对话端点。在 /api/docs 启用交互式 Scalar 文档进行实时探索。"
+---
+
+Octop 通过挂载在 `/api` 前缀下的 HTTP 和 WebSocket API 暴露全部功能。除健康检查、首次设置和认证相关路径外，所有端点都需要 JWT 访问令牌——通过 `POST /api/auth/login` 获取。除非端点发射服务器发送事件流（`text/event-stream`）或原始字节（音频、文件下载），否则响应均为 JSON。
+
+## 基地地址
+
+```text
+http://127.0.0.1:8088/api
+```
+
+若您通过 `OCTOP_PORT` 或 `--host`/`--port` 修改了默认值，请将 `127.0.0.1:8088` 替换为您服务器实际的主机地址和端口。
+
+## 交互式 API 文档
+
+Octop 内置了 [Scalar](https://scalar.com/) 界面用于实时探索 API。它**默认禁用**。启用步骤：
+
+1. 打开 `~/.octop/config.json`。
+2. 设置 `"enable_api_docs": true`。
+3. 重启 Octop（`octop run`）。
+4. 访问 `http://127.0.0.1:8088/api/docs`。
+
+无需任何配置，原始的 OpenAPI 模式始终可用：
+
+```text
+http://127.0.0.1:8088/api/openapi.json
+```
+
+<Tip>
+  也可以在启动服务器前设置环境变量 `OCTOP_ENABLE_API_DOCS=1` 来启用交互式文档，无需编辑 `config.json`。
+</Tip>
+
+## 认证概览
+
+向 `POST /api/auth/login` 发送凭据以获取令牌。然后在后续每个请求的 `Authorization` 头中传递它：
+
+```text
+Authorization: Bearer <your_access_token>
+```
+
+完整的登录流程、令牌过期详情和错误处理，参阅[认证](/zh/api/authentication)页面。
+
+## 公开端点
+
+以下路径**不**需要令牌：
+
+| 路径 | 描述 |
+| --- | --- |
+| `/api/health` | 服务器健康状态与版本 |
+| `/api/auth/login` | 获取 JWT 令牌 |
+| `/api/setup/*` | 首次运行设置向导 |
+| `/api/openapi.json` | OpenAPI 模式 |
+| `/api/docs` | 交互式 Scalar 文档（启用时） |
+| `/api/connectors/oauth/callback` | OAuth 重定向目标 |
+| `/api/internal/mcp/*` | 内部 MCP 网关（网络隔离） |
+
+其他所有路径都需要有效的 JWT 令牌。在首次运行向导完成之前，非设置类路径会被进一步屏蔽。
+
+## 认证级别图例
+
+API 文档中的每个端点都具备以下认证级别之一：
+
+| 级别 | 含义 |
+| --- | --- |
+| **public** | 无需令牌 |
+| **user** | 任何已登录账户 |
+| **owner** | 资源的拥有者或管理员 |
+| **admin** | 需要管理员角色 |
+
+## 限流
+
+登录尝试会被限流以防范暴力破解攻击。默认阈值为**5 次尝试**后**锁定 15 分钟**。可通过环境变量 `OCTOP_LOGIN_MAX_ATTEMPTS` 和 `OCTOP_LOGIN_LOCKOUT_SECONDS` 配置。管理员可通过调用 `POST /api/users/{id}/unlock-login` 立即解除锁定。
+
+## 健康检查
+
+在发射需认证的请求之前，验证您的 Octop 实例是否可达：
+
+```bash
+curl http://127.0.0.1:8088/api/health
+# {"status": "ok", "version": "0.9.16"}
+```
+
+## 探索 API 各个部分
+
+<CardGroup cols={2}>
+  <Card title="认证" icon="key" href="/zh/api/authentication">
+    登录、管理令牌、修改密码并了解错误代码。
+  </Card>
+
+  <Card title="智能体" icon="robot" href="/zh/api/agents">
+    创建、配置、启动、停止并管理 AI 智能体。
+  </Card>
+
+  <Card title="对话" icon="message" href="/zh/api/chat">
+    通过 WebSocket 对话端点发送消息并流式传输回复。
+  </Card>
+
+  <Card title="渠道" icon="plug" href="/zh/api/channels">
+    将智能体连接到飞书、钉钉、Discord、企业微信等。
+  </Card>
+
+  <Card title="提供商" icon="microchip" href="/zh/api/providers">
+    配置 LLM 提供商并管理模型路由。
+  </Card>
+
+  <Card title="定时任务" icon="clock" href="/zh/api/cron">
+    使用 cron 表达式或间隔别名设置自动化任务。
+  </Card>
+
+  <Card title="用户与管理" icon="users" href="/zh/api/users-admin">
+    管理用户账户、角色和平台级管理操作。
+  </Card>
+</CardGroup>

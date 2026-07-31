@@ -1,0 +1,57 @@
+---
+title: "Octop 服务器命令：init、run、service 与 update"
+sidebarTitle: "服务器命令"
+description: "引导新安装，在前台启动服务器，将其管理为系统服务，并将 Octop 升级到最新发布版本。"
+---
+
+用于引导新安装、前台启动服务器、将其作为系统服务管理，以及升级到最新 Octop 版本。
+
+## `octop init`
+
+运行交互式设置向导，创建本地数据库、生成 JWT 密钥并设置管理员账户。
+
+```bash
+octop init
+```
+
+| 选项 | 描述 |
+| --- | --- |
+| `--force` | 重新初始化，覆盖已有数据库 |
+| `--non-interactive` | 跳过向导，使用默认值 |
+
+## `octop run`
+
+在前台启动 Octop 服务器。
+
+```bash
+octop run [--host 0.0.0.0] [--port 9000]
+```
+
+| 选项 | 描述 |
+| --- | --- |
+| `--host` | 绑定的网络接口（默认 `127.0.0.1`） |
+| `--port` | 监听端口（默认 `8088`） |
+
+## `octop service`
+
+将 Octop 作为系统服务管理。
+
+```bash
+octop service start
+octop service stop
+octop service restart
+octop service status
+octop service uninstall
+```
+
+## `octop update`
+
+将 Octop 升级到最新发布版本。
+
+```bash
+octop update
+```
+
+<Note>
+  升级前会自动备份您的数据库。升级完成后需要重启服务器才能使新版本生效：`octop service restart`。
+</Note>

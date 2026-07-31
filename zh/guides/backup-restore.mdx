@@ -1,0 +1,48 @@
+---
+title: "如何备份并完整恢复您的 Octop 数据"
+sidebarTitle: "备份与恢复"
+description: "导出包含 SQLite 数据库、智能体工作区和配置文件的完整 Octop 备份。在运行 Octop 的任何机器上恢复全部数据。"
+---
+
+导出一份包含 SQLite 数据库、智能体工作区和配置文件的完整 Octop 备份，并在任何运行 Octop 的机器上完整恢复。
+
+## 创建备份
+
+```bash
+octop backup create --output ./octop-backup.tar.gz
+```
+
+该命令会打包：
+
+- `~/.octop/octop.db` —— 主数据库
+- `~/.octop/secrets/` —— JWT 密钥和其他敏感文件
+- `~/.octop/agents/` —— 每个智能体的工作区
+- `~/.octop/config.json` —— 服务器配置
+
+## 定期自动备份
+
+将备份与定时任务结合，实现定期自动备份：
+
+```bash
+octop cron add --schedule "0 2 * * *" --command "octop backup create --output /backups/octop-$(date +%F).tar.gz"
+```
+
+## 恢复备份
+
+在新机器或同一机器上恢复备份：
+
+```bash
+octop backup restore --input ./octop-backup.tar.gz
+```
+
+<Warning>
+  恢复操作会覆盖目标机器上现有的 `~/.octop` 目录。在恢复前请确保已备份任何需要保留的本地数据。
+</Warning>
+
+<Note>
+  恢复完成后，重新启动 Octop 服务器以加载恢复的数据：
+
+  ```bash
+  octop service restart
+  ```
+</Note>

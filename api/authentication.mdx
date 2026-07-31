@@ -1,0 +1,165 @@
+---
+title: 'Authenticate and Authorize All Requests to the Octop API'
+sidebarTitle: 'Authentication'
+description: 'Get a JWT access token via POST /api/auth/login, then include it as a Bearer token on every subsequent call to the Octop REST API.'
+---
+
+Every Octop API call — except `/api/health`, `/api/setup/*`, and the OpenAPI schema — requires a JWT access token. Obtain the token by logging in with your credentials, then include it in the `Authorization` header of every subsequent request. Tokens expire after 24 hours by default; re-login to get a fresh one.
+
+<Warning>
+  The default credentials are `admin` / `octop`. Change the admin password immediately after completing the setup wizard — anyone with network access to your Octop instance can otherwise authenticate as admin.
+</Warning>
+
+## Log in and get a token
+
+<Steps>
+  <Step title="POST your credentials">
+    Send your `username` and `password` to the login endpoint:
+
+    <CodeGroup>
+      ```bash cURL
+      curl -X POST http://127.0.0.1:8088/api/auth/login \
+        -H 'Content-Type: application/json' \
+        -d '{"username": "admin", "password": "octop"}'
+      ```
+
+      ```python Python
+      import requests
+
+      resp = requests.post(
+          "http://127.0.0.1:8088/api/auth/login",
+          json={"username": "admin", "password": "octop"},
+      )
+      token = resp.json()["access_token"]
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Extract the access token">
+    The response body contains your JWT token along with your role and user details:
+
+    ```json
+    {
+      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "role": "admin",
+      "user": {
+        "id": 1,
+        "username": "admin",
+        "display_name": "Administrator"
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Pass the token in the Authorization header">
+    Include the token as a Bearer credential on every subsequent request:
+
+    <CodeGroup>
+      ```bash cURL
+      curl http://127.0.0.1:8088/api/agents \
+        -H 'Authorization: Bearer <your_token>'
+      ```
+
+      ```python Python
+      headers = {"Authorization": f"Bearer {token}"}
+      agents = requests.get(
+          "http://127.0.0.1:8088/api/agents",
+          headers=headers,
+      ).json()
+      ```
+    </CodeGroup>
+  </Step>
+</Steps>
+
+### Login request fields
+
+<ParamField body="username" type="string" required>
+  The account username. The default admin username is `admin`.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  The account password. The default admin password is `octop`.
+</ParamField>
+
+### Login response fields
+
+<ResponseField name="access_token" type="string">
+  A signed JWT token. Include this value as `Bearer <access_token>` in the `Authorization` header.
+</ResponseField>
+
+<ResponseField name="role" type="string">
+  The account's role. Either `"admin"` or `"user"`.
+</ResponseField>
+
+<ResponseField name="user" type="object">
+  Basic profile information for the authenticated account.
+
+  <Expandable title="user fields">
+    <ResponseField name="user.id" type="integer">
+      Unique numeric identifier for the user.
+    </ResponseField>
+    <ResponseField name="user.username" type="string">
+      The account's login username.
+    </ResponseField>
+    <ResponseField name="user.display_name" type="string">
+      The human-readable display name shown in the dashboard.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Token expiry
+
+Tokens expire after **24 hours** by default. Control this with the `OCTOP_ACCESS_TOKEN_TTL` environment variable (value in seconds). When a token expires, re-call `POST /api/auth/login` to obtain a fresh one.
+
+<Note>
+  Rotating the JWT secret via `octop admin rotate-jwt-secret` immediately invalidates **all** outstanding tokens. Every user must re-login after a rotation.
+</Note>
+
+## Get current user info
+
+Retrieve the profile of the currently authenticated user:
+
+```bash
+curl http://127.0.0.1:8088/api/auth/me \
+  -H 'Authorization: Bearer <token>'
+```
+
+The response includes `id`, `username`, `role`, `display_name`, `locale`, and other profile fields.
+
+## Change password
+
+Update your own password without admin involvement:
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/auth/change-password \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"old_password": "octop", "new_password": "mysecurepassword"}'
+```
+
+A successful response returns `204 No Content`.
+
+## Log out
+
+Invalidate the current token server-side:
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/auth/logout \
+  -H 'Authorization: Bearer <token>'
+```
+
+A successful response returns `204 No Content`.
+
+## Error reference
+
+| HTTP Status | Error Code | Cause | Resolution |
+|-------------|------------|-------|------------|
+| `401 Unauthorized` | `AUTH_FAILED` | Invalid credentials supplied at login | Check username and password |
+| `401 Unauthorized` | `TOKEN_EXPIRED` | JWT has passed its TTL | Re-login to obtain a fresh token |
+| `403 Forbidden` | `FORBIDDEN` | Authenticated but insufficient role (e.g., non-admin accessing an admin endpoint) | Log in with an account that has the required role |
+| `403 Forbidden` | `USER_DISABLED` | The account has been disabled by an admin | Contact your Octop administrator |
+| `423 Locked` | `LOGIN_LOCKED` | Too many failed login attempts; account is locked | Wait out the lockout period, or ask an admin to call `POST /api/users/{id}/unlock-login` |
+
+<Tip>
+  Set `OCTOP_ENABLE_API_DOCS=1` (or `"enable_api_docs": true` in `config.json`) and visit `http://127.0.0.1:8088/api/docs` to explore every endpoint interactively with the built-in Scalar interface — no extra tooling required.
+</Tip>

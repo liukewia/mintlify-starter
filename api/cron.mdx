@@ -1,0 +1,120 @@
+---
+title: 'Octop Cron API: Schedule Automated Agent Tasks via REST'
+sidebarTitle: 'Cron'
+description: 'Create and manage scheduled cron jobs for Octop agents via the REST API. Supports cron expressions, intervals, and one-time date triggers.'
+---
+
+The Cron API lets you create scheduled tasks that prompt your agents automatically — no manual interaction required. Jobs run on cron expressions, fixed intervals, or a specific one-time date and time. Each job sends a `prompt` to the agent on schedule, either passing it directly to the session or running it through the LLM to generate a reply.
+
+## Base path
+
+```
+/api/agents/{agent_id}/cron
+```
+
+## Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/cron/settings` | user | Get process timezone |
+| `GET` | `/agents/{aid}/cron` | owner | List cron jobs for an agent |
+| `POST` | `/agents/{aid}/cron` | owner | Create a cron job |
+| `GET` | `/agents/{aid}/cron/{cid}` | owner | Get job details |
+| `PATCH` | `/agents/{aid}/cron/{cid}` | owner | Update a job |
+| `DELETE` | `/agents/{aid}/cron/{cid}` | owner | Delete a job |
+| `POST` | `/agents/{aid}/cron/{cid}/run-now` | owner | Trigger immediately (off-schedule) |
+
+## Create a cron job
+
+Send a `POST` request with a `trigger` and a `prompt` to schedule a recurring task.
+
+<CodeGroup>
+```bash Daily briefing (9 AM)
+curl -X POST http://127.0.0.1:8088/api/agents/main/cron \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "trigger": "0 9 * * *",
+    "prompt": "Summarize today'\''s important events and send me a briefing.",
+    "task_type": "agent"
+  }'
+```
+
+```bash Every 30 minutes
+curl -X POST http://127.0.0.1:8088/api/agents/main/cron \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "trigger": "interval:30",
+    "prompt": "Check for new messages in my inbox and summarize them.",
+    "task_type": "agent"
+  }'
+```
+
+```bash One-time at a specific date
+curl -X POST http://127.0.0.1:8088/api/agents/main/cron \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "trigger": "date:2025-06-01T09:00:00",
+    "prompt": "Remind me to review the Q2 report.",
+    "task_type": "text"
+  }'
+```
+</CodeGroup>
+
+### Request body
+
+<ParamField body="trigger" type="string" required>
+  Defines when the job runs. Accepts a cron expression, an interval shorthand, or a one-time ISO 8601 date. See the trigger format table below.
+</ParamField>
+
+<ParamField body="prompt" type="string" required>
+  The text sent to the agent when the job fires. Must be non-empty and no longer than 2000 characters.
+</ParamField>
+
+<ParamField body="task_type" type="string">
+  Controls how the prompt is handled. Use `"agent"` (default) to run the prompt through the LLM and push the reply into the session. Use `"text"` to push the prompt text directly without an LLM call.
+</ParamField>
+
+<ParamField body="session_key" type="string">
+  Route the scheduled message to a specific existing thread. If omitted, the job uses the agent's default session.
+</ParamField>
+
+<ParamField body="fresh_thread" type="boolean">
+  When `true`, Octop creates a brand-new thread for each run instead of appending to an existing one. Useful for daily summaries you want to keep isolated.
+</ParamField>
+
+<ParamField body="model" type="string">
+  Override the agent's `default_model` for this job only — for example `"openai:gpt-4o-mini"` to use a cheaper model for routine scheduled prompts.
+</ParamField>
+
+## Trigger formats
+
+| Format | Example | Meaning |
+|--------|---------|---------|
+| Cron expression | `0 9 * * *` | 9 AM every day |
+| Cron expression | `0 */2 * * *` | Every 2 hours |
+| Interval | `interval:30` | Every 30 minutes |
+| One-time | `date:2025-06-01T09:00:00` | Once at the specified date and time |
+
+<Note>
+  Cron jobs run in the timezone configured on your Octop server. Check the current timezone with `GET /api/cron/settings` before scheduling time-sensitive jobs.
+</Note>
+
+## Trigger a job immediately
+
+Use `POST /agents/{aid}/cron/{cid}/run-now` to fire a scheduled job outside its normal schedule — for example when testing a new prompt before the next scheduled run.
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/agents/main/cron/job_abc/run-now \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+This returns `204 No Content` and enqueues the job immediately. It does not affect the next scheduled run time.
+
+<Tip>
+  Combine `fresh_thread: true` with a daily cron expression to get a clean, date-stamped conversation thread for every briefing or report — making it easy to review past runs in the chat history without scrolling through a single long thread.
+</Tip>

@@ -1,0 +1,118 @@
+---
+title: "How Octop Works: Architecture Overview"
+sidebarTitle: "Overview"
+description: "Understand Octop's single-process model: one server runs the web dashboard, CLI, IM channels, and cron jobs sharing one database."
+---
+
+Octop runs as a **single process**. Every surface — the web dashboard, the CLI, IM channel bridges, and cron automation — shares one SQLite database stored under `~/.octop/`. When you restart Octop, the entire runtime state is rebuilt from `~/.octop/octop.db`, so there are no external queues, brokers, or microservices to manage.
+
+## How the surfaces connect
+
+All incoming messages, regardless of their origin, flow through a single unified processing pipeline inside Octop. The diagram below shows how the four surfaces funnel into that pipeline and share one database.
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    Octop (single process)            │
+│                                                     │
+│   ┌──────────────┐  ┌──────────────┐               │
+│   │ Web Dashboard│  │  CLI / HTTP  │               │
+│   └──────┬───────┘  └──────┬───────┘               │
+│          │                 │                        │
+│   ┌──────┴─────────────────┴───────┐               │
+│   │           FastAPI app          │               │
+│   └──────────────────┬─────────────┘               │
+│                      │                             │
+│   ┌──────────────┐   │   ┌──────────────┐          │
+│   │  IM Channels │───┤   │     Cron     │          │
+│   │  (platform   │   │   │  (scheduled  │          │
+│   │   bridges)   │   │   │   prompts)   │          │
+│   └──────┬───────┘   │   └──────┬───────┘          │
+│          └───────────┼──────────┘                  │
+│                      ▼                             │
+│            ┌──────────────────┐                    │
+│            │  Message router  │                    │
+│            └────────┬─────────┘                    │
+│                     │                              │
+│            ┌────────▼─────────┐                    │
+│            │   SQLite (WAL)   │  ~/.octop/octop.db │
+│            └──────────────────┘                    │
+└─────────────────────────────────────────────────────┘
+```
+
+### The four surfaces
+
+| Surface | What it does |
+|---|---|
+| **Web Dashboard** | Browser UI for chat, agent management, connectors, channels, cron, and settings |
+| **CLI** | Terminal commands (`octop chat`, `octop agent`, `octop cron`, etc.) and ACP integration |
+| **IM Channels** | Bridges to Feishu, DingTalk, QQ, Discord, WeCom, and other platforms |
+| **Cron** | Scheduled tasks that send recurring prompts directly to your agents |
+
+## Key concepts
+
+<CardGroup cols={2}>
+  <Card title="Agents" icon="robot" href="/concepts/agents">
+    Per-user AI assistants, each with their own workspace, LLM provider, skills, channels, and conversation history.
+  </Card>
+  <Card title="Experts & Personas" icon="users" href="/concepts/experts-personas">
+    Bundled expert templates you can instantiate as agents, plus 16 MBTI personality profiles that shape how an agent communicates.
+  </Card>
+  <Card title="Channels" icon="comments" href="/concepts/channels">
+    IM platform connections that route messages from Feishu, DingTalk, QQ, Discord, WeCom, and more to a specific agent.
+  </Card>
+  <Card title="Connectors" icon="plug" href="/concepts/connectors">
+    OAuth-authenticated apps and MCP gateways that give agents access to external services and tools.
+  </Card>
+</CardGroup>
+
+Here is a brief description of each concept:
+
+<Accordion title="Agents">
+  An **agent** is a personal AI assistant tied to one user. Each agent has an isolated workspace, its own LLM provider configuration, enabled skills, linked channels, and an independent conversation history. A single user can run multiple agents simultaneously — for example, one for coding and one for research.
+</Accordion>
+
+<Accordion title="Experts">
+  **Experts** are pre-configured agent templates bundled with Octop. Octop scans its expert library at boot and makes them available for you to instantiate as real agents with a single command. Think of them as starting points that save you configuration time.
+</Accordion>
+
+<Accordion title="Personas">
+  A **persona** is an MBTI personality profile that shapes the tone, communication style, and behaviour of an agent. Octop ships 16 built-in profiles — from *The Architect (INTJ)* to *The Entertainer (ESFP)*. Assigning a persona writes a `SOUL.md` file into the agent's workspace, which becomes the backbone of its system message.
+</Accordion>
+
+<Accordion title="Channels">
+  A **channel** connects one agent to an external IM platform. Once a channel is configured, messages sent to that platform are routed through Octop's IM bridge and delivered to that agent. Each agent can have multiple channels active at the same time.
+</Accordion>
+
+<Accordion title="Connectors">
+  **Connectors** extend what an agent can do. OAuth connectors let the agent interact with external services (such as Tencent Docs or Weibo) after you authorize the connection. MCP gateways connect any Model Context Protocol-compatible tool server, making its tools available to the agent during chat.
+</Accordion>
+
+<Accordion title="Cron">
+  **Cron** jobs let you schedule recurring prompts that are sent to an agent automatically. You can write them in natural language or as slash commands, and manage them from the dashboard or via `octop cron`.
+</Accordion>
+
+## Data directory layout
+
+All of Octop's runtime state lives under `~/.octop/`. Nothing is stored in a remote database or cloud service.
+
+```
+~/.octop/                          ← install & data root
+├── octop.db                       # SQLite — users, agents, channels, cron …
+├── secrets/                       # JWT secret, channel tokens
+├── agents/<agent_id>/             # per-agent workspace (SOUL.md, skills …)
+├── security/tool_guard/           # shell command allow/deny rules
+├── logs/                          # runtime logs
+├── venv/                          # uv-managed Python environment
+└── bin/octop                      # PATH wrapper → venv/bin/octop
+```
+
+<Note>
+  Because all data lives on your machine, you can back up or migrate a complete Octop installation by copying the `~/.octop/` directory. Use `octop backup` for a managed export.
+</Note>
+
+## Single-process advantages
+
+- **Simple deployment** — one `octop run` command starts everything.
+- **Restart-safe** — the process rebuilds all runtime state from `octop.db` on boot; no in-memory state is lost permanently.
+- **No external dependencies** — no Redis, no RabbitMQ, no separate worker processes.
+- **Local-first privacy** — all conversations, credentials, and workspaces stay on your machine.

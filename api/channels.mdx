@@ -1,0 +1,124 @@
+---
+title: 'Channels API: Connect Agents to IM Platforms in Octop'
+sidebarTitle: 'Channels'
+description: 'Create, update, test, and delete IM channel connections for Octop agents. Endpoints for Feishu, DingTalk, Discord, WeCom, and more.'
+---
+
+Use the Channels API to programmatically manage which IM platforms connect to each agent. Each channel links an agent to an external messaging service — such as Discord, Feishu, DingTalk, or WeCom — using platform-specific credentials stored in the channel's `config` object. All endpoints require owner-level access to the parent agent.
+
+## Base path
+
+```
+/api/agents/{agent_id}/channels
+```
+
+## Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/agents/{aid}/channels` | owner | List channels for an agent |
+| `POST` | `/agents/{aid}/channels` | owner | Create a new channel |
+| `GET` | `/agents/{aid}/channels/{cid}` | owner | Get channel details |
+| `PATCH` | `/agents/{aid}/channels/{cid}` | owner | Update channel config or name |
+| `DELETE` | `/agents/{aid}/channels/{cid}` | owner | Delete channel |
+| `POST` | `/agents/{aid}/channels/{cid}/test` | owner | Test channel connection |
+
+## Create a channel
+
+Provide a `kind`, a `name`, and a platform-specific `config` object. The example below creates a Discord bot channel.
+
+<CodeGroup>
+```bash Discord
+curl -X POST http://127.0.0.1:8088/api/agents/main/channels \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "kind": "discord",
+    "name": "My Discord Bot",
+    "config": {
+      "token": "your-bot-token"
+    }
+  }'
+```
+
+```bash Feishu
+curl -X POST http://127.0.0.1:8088/api/agents/main/channels \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "kind": "feishu",
+    "name": "Feishu Bot",
+    "config": {
+      "app_id": "cli_...",
+      "app_secret": "..."
+    }
+  }'
+```
+</CodeGroup>
+
+A successful request returns `201 Created` with the new channel row, including its assigned `id` (used as `{cid}` in subsequent calls).
+
+<Warning>
+  Octop validates the `kind` value against its registered channel builders. If you pass an unrecognised platform name, the server returns `400 CHANNEL_KIND_UNSUPPORTED`. Supported kinds include `discord`, `feishu`, `dingtalk`, `wecom`, `weixin`, and `yuanbao`, depending on your instance configuration.
+</Warning>
+
+## Test a channel
+
+After creating a channel, verify its credentials are valid and the platform is reachable by calling the `test` endpoint. Octop instantiates the channel handler, starts it, and stops it, returning a simple `ok` flag.
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/agents/main/channels/ch_abc/test \
+  -H 'Authorization: Bearer $TOKEN'
+```
+
+```json Response (success)
+{"ok": true}
+```
+
+```json Response (failure)
+{"ok": false, "error": "Invalid bot token"}
+```
+</CodeGroup>
+
+## Update a channel
+
+Send a `PATCH` with only the fields you want to change — `name`, `config`, or both. The response contains the updated channel row.
+
+<CodeGroup>
+```bash cURL
+curl -X PATCH http://127.0.0.1:8088/api/agents/main/channels/ch_abc \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "Production Discord Bot"}'
+```
+</CodeGroup>
+
+## Delete a channel
+
+Deleting a channel disconnects it from the agent immediately and returns `204 No Content`.
+
+<CodeGroup>
+```bash cURL
+curl -X DELETE http://127.0.0.1:8088/api/agents/main/channels/ch_abc \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+## Probe before creating
+
+<Tip>
+  Use the probe endpoint to validate a candidate config before committing to a full channel creation. Send `POST /agents/{aid}/channels/probe` with the same `kind` and `config` you plan to use — it returns `{"ok": true}` or `{"ok": false, "reason": "...", "detail": "..."}` without persisting anything.
+</Tip>
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/agents/main/channels/probe \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "kind": "discord",
+    "config": {"token": "your-bot-token"}
+  }'
+```
+</CodeGroup>

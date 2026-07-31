@@ -1,0 +1,105 @@
+---
+title: "IM Channels: Connect Octop to Your Messaging Apps"
+sidebarTitle: "Channels"
+description: "Octop supports Feishu, DingTalk, QQ, Discord, WeCom, and more. Each channel connects an IM platform to one of your agents."
+---
+
+Channels connect your Octop agents to external IM platforms. Once a channel is configured, every message sent to that platform is routed through Octop's IM bridge and delivered to the specific agent the channel belongs to. A single agent can have multiple channels active at the same time — for example, the same agent can respond on both Feishu and Discord simultaneously.
+
+## Supported channels
+
+| Channel | Required credentials |
+|---|---|
+| **Feishu** | App ID, App Secret |
+| **DingTalk** | App Key, App Secret |
+| **QQ** | Bot AppID, Token |
+| **Discord** | Bot Token |
+| **WeCom** | Corp ID, Agent Secret |
+| **Web Dashboard** | Enabled by default — no credentials required |
+
+<Note>
+  The Web Dashboard channel is always available. You can start chatting with any agent immediately after creation without configuring an IM channel.
+</Note>
+
+## Add a channel to an agent
+
+### Via the dashboard
+
+<Steps>
+  <Step title="Open the agent">
+    Navigate to **Agents** and select the agent you want to connect.
+  </Step>
+  <Step title="Open the Channels tab">
+    Click the **Channels** tab on the agent detail page.
+  </Step>
+  <Step title="Add a channel">
+    Click **Add Channel**, choose the platform, and enter the required credentials. Click **Save** to activate the channel.
+  </Step>
+</Steps>
+
+### Via the CLI
+
+Run the interactive channel setup wizard:
+
+```bash
+octop channel install
+```
+
+The wizard prompts you to select a platform, choose which agent to attach it to, and enter the required credentials step by step.
+
+<Note>
+  For Feishu, Octop provides a dedicated guided setup command that walks you through creating a bot in the Feishu developer console and configuring the webhook:
+
+  ```bash
+  octop channel feishu-setup
+  ```
+
+  This command explains each required credential and opens the relevant Feishu console pages in the correct order.
+</Note>
+
+## How message routing works
+
+Each channel is attached to exactly one agent. When a user sends a message on the connected platform, Octop's IM bridge normalises it into a standard format and delivers it to the agent for processing. The agent's reply travels back through the same bridge to the originating platform.
+
+```
+User on Feishu
+    │
+    ▼
+Octop IM bridge  (normalises platform message)
+    │
+    ▼
+Agent            (processes the message)
+    │
+    ▼
+Octop IM bridge  (sends reply back to Feishu)
+    │
+    ▼
+User on Feishu
+```
+
+<Warning>
+  Deleting a channel removes the connection immediately. Any in-flight messages on that platform will not receive a reply. Re-adding the channel restores routing without losing conversation history.
+</Warning>
+
+## Manage existing channels
+
+```bash
+# List all configured channels
+octop channel list
+
+# Remove a channel by ID
+octop channel remove <channel_id>
+```
+
+You can also enable or disable individual channels from the agent's **Channels** tab in the dashboard without deleting them — useful if you want to temporarily pause a platform connection.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Agents" icon="robot" href="/concepts/agents">
+    Review how to create and manage the agents your channels connect to.
+  </Card>
+  <Card title="Connectors" icon="plug" href="/concepts/connectors">
+    Extend your agents with OAuth apps and MCP gateways to reach external services.
+  </Card>
+</CardGroup>

@@ -1,0 +1,129 @@
+---
+title: "Octop 提供商 API：配置 LLM 提供商与模型"
+sidebarTitle: "提供商"
+description: "使用 Octop 的 /api/providers 端点配置 LLM 提供商、测试连接并选择当前活动模型。"
+---
+
+配置 LLM 提供商，选择可用模型，并控制智能体使用的默认模型。
+
+## 个人级 vs 全局级提供商
+
+普通用户可以配置自己的个人提供商（仅自己可见）。管理员可以通过单独的 `/api/admin/providers` 端点配置全局共享提供商，供所有用户使用。
+
+## 端点
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| GET | `/providers` | 列出您的提供商 |
+| POST | `/providers` | 添加新提供商 |
+| GET | `/providers/{id}` | 获取提供商详情 |
+| PATCH | `/providers/{id}` | 更新提供商（拥有者） |
+| DELETE | `/providers/{id}` | 删除提供商（拥有者） |
+| POST | `/providers/{id}/test` | 测试提供商连接 |
+| POST | `/admin/providers` | 添加全局提供商（管理员） |
+| PATCH | `/admin/providers` | 更新全局提供商（管理员） |
+| DELETE | `/admin/providers` | 删除全局提供商（管理员） |
+| GET | `/models` | 列出已解析的可用模型 |
+| GET | `/models/active` | 获取当前活动模型 |
+| PUT | `/models/active` | 设置活动模型（管理员） |
+
+## 创建提供商
+
+### OpenAI
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/providers \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "openai",
+    "kind": "openai",
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "sk-..."
+  }'
+```
+
+### 本地 Ollama
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/providers \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "local-ollama",
+    "kind": "ollama",
+    "base_url": "http://127.0.0.1:11434"
+  }'
+```
+
+### DashScope
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/providers \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "dashscope",
+    "kind": "dashscope",
+    "api_key": "sk-..."
+  }'
+```
+
+<Note>
+  API 密钥会加密存储，不会在 GET 响应中返回。
+</Note>
+
+## 测试提供商
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/providers/1/test \
+  -H 'Authorization: Bearer <token>'
+```
+
+响应：
+
+```json
+{"ok": true, "latency_ms": 312}
+```
+
+或失败时返回错误详情。
+
+## 列出可用模型
+
+```bash
+curl http://127.0.0.1:8088/api/models \
+  -H 'Authorization: Bearer <token>'
+```
+
+返回根据您已配置提供商解析得到的全部模型。
+
+## 设置活动模型
+
+仅限管理员：
+
+```bash
+curl -X PUT http://127.0.0.1:8088/api/models/active \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"provider_name": "openai", "model": "gpt-4o"}'
+```
+
+<Warning>
+  删除仍被一个或多个智能体引用的提供商将返回 `409 PROVIDER_REFERENCED`。请先将受影响智能体重新指定到其他提供商。
+</Warning>
+
+<Expandable title="管理员共享提供商">
+  管理员可以通过 `/api/admin/providers` 配置对所有用户可用的共享提供商。这对于在团队成员之间集中管理 API 密钥而不需要每个用户重复配置很有用。
+</Expandable>
+
+## Agent Client Protocol（ACP）
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| GET | `/acp` | 列出 ACP 运行时 |
+| PUT | `/acp` | 添加/更新 ACP 运行时 |
+| GET | `/acp/{runner_name}` | 获取运行时详情 |
+| PUT | `/acp/{runner_name}` | 更新运行时 |
+| DELETE | `/acp/{runner_name}` | 删除运行时 |
+| GET | `/agents/{aid}/acp` | 获取智能体的 ACP 配置 |
+| PUT | `/agents/{aid}/acp` | 设置智能体的 ACP 配置 |

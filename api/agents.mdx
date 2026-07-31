@@ -1,0 +1,159 @@
+---
+title: 'Octop Agents API: Create, Configure, and Control Agents'
+sidebarTitle: 'Agents'
+description: 'REST endpoints for creating, configuring, and controlling Octop agents. Start, stop, reload, and read agent status via the HTTP API.'
+---
+
+The Agents API lets you create and manage agents programmatically. Use these endpoints to spin up new agents, update their configuration, and control their runtime lifecycle. All endpoints require a Bearer token obtained from `POST /api/auth/login`.
+
+## Base path
+
+```
+/api/agents
+```
+
+## Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/agents` | user | List all agents for current user |
+| `POST` | `/agents` | user | Create a new agent |
+| `GET` | `/agents/{id}` | owner | Get full agent details |
+| `PATCH` | `/agents/{id}` | owner | Update agent settings |
+| `DELETE` | `/agents/{id}` | owner | Delete agent |
+| `POST` | `/agents/{id}/start` | owner | Start agent runtime |
+| `POST` | `/agents/{id}/stop` | owner | Stop agent runtime |
+| `POST` | `/agents/{id}/reload` | owner | Reload agent (rebuild runtime) |
+| `POST` | `/agents/{id}/read` | owner | Clear unread badge |
+| `GET` | `/agents/{id}/status` | owner | Get runtime state |
+| `POST` | `/agents/from-expert/{expert_id}` | user | Create from expert template |
+
+## List agents
+
+Retrieve all agents belonging to the authenticated user.
+
+<CodeGroup>
+```bash cURL
+curl http://127.0.0.1:8088/api/agents \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+## Create an agent
+
+Send a `POST` request with a JSON body to create a new agent.
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/agents \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "researcher",
+    "persona_mbti": "INTJ",
+    "default_model": "openai:gpt-4o",
+    "description": "Research assistant"
+  }'
+```
+</CodeGroup>
+
+### Request body
+
+<ParamField body="name" type="string" required>
+  The agent's display name. Must be unique within your account.
+</ParamField>
+
+<ParamField body="persona_mbti" type="string">
+  MBTI personality code that shapes the agent's tone and reasoning style — for example `INTJ` or `ENFP`. Octop ships 16 built-in profiles plus a `_default`.
+</ParamField>
+
+<ParamField body="default_model" type="string">
+  Model identifier the agent uses for LLM calls — for example `openai:gpt-4o`. Must reference an enabled provider visible to your account.
+</ParamField>
+
+<ParamField body="system_prompt" type="string">
+  Custom system prompt text appended to the persona profile. Use this to add domain-specific instructions or constraints on top of the MBTI persona.
+</ParamField>
+
+<ParamField body="description" type="string">
+  A short human-readable description of what the agent does. Displayed in the agent list.
+</ParamField>
+
+<ParamField body="template_name" type="string">
+  Name of a bundled expert template to base the new agent on. Alternatively, use `POST /agents/from-expert/{expert_id}` to create from the expert catalog by ID.
+</ParamField>
+
+## Start and stop an agent
+
+Use the `start` and `stop` sub-routes to control the agent's runtime process without deleting it.
+
+<CodeGroup>
+```bash Start
+curl -X POST http://127.0.0.1:8088/api/agents/researcher/start \
+  -H 'Authorization: Bearer $TOKEN'
+```
+
+```bash Stop
+curl -X POST http://127.0.0.1:8088/api/agents/researcher/stop \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+Both endpoints return `204 No Content` on success. To verify the resulting state, call `GET /agents/{id}/status`, which returns `{state, last_error?, ...}`.
+
+## Reload an agent
+
+`POST /agents/{id}/reload` tears down the running harness runtime and rebuilds it from the current configuration. Use this after updating skills, environment variables, or the system prompt to apply changes without recreating the agent.
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/agents/researcher/reload \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+<Note>
+  If another operation is already in flight for the agent, the server returns `409 AGENT_BUSY`. Wait for the current operation to finish before reloading.
+</Note>
+
+## Create from an expert template
+
+Octop ships a catalog of pre-built expert agents. Use `POST /agents/from-expert/{expert_id}` to instantiate one with a custom name.
+
+<CodeGroup>
+```bash cURL
+curl -X POST http://127.0.0.1:8088/api/agents/from-expert/code-reviewer \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"name": "my-code-reviewer"}'
+```
+</CodeGroup>
+
+Retrieve the expert catalog first with `GET /api/experts` to find valid `expert_id` values.
+
+## MBTI persona codes
+
+When creating or updating an agent, you can set `persona_mbti` to any of the 16 built-in MBTI codes (or `_default`). Use `GET /api/mbti/codes` to retrieve the full list of available codes along with their display names and descriptions. To inspect the detailed profile for a specific code — including personality dimensions, behaviour mappings, and UI metadata — call `GET /api/mbti/codes/{code}`.
+
+<CodeGroup>
+```bash List all MBTI codes
+curl http://127.0.0.1:8088/api/mbti/codes \
+  -H 'Authorization: Bearer $TOKEN'
+```
+
+```bash Get a specific profile
+curl http://127.0.0.1:8088/api/mbti/codes/INTJ \
+  -H 'Authorization: Bearer $TOKEN'
+```
+</CodeGroup>
+
+You can also apply a persona to an existing agent and immediately reload it with `PUT /api/agents/{id}/mbti`:
+
+<CodeGroup>
+```bash cURL
+curl -X PUT http://127.0.0.1:8088/api/agents/researcher/mbti \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"code": "ENFP"}'
+```
+</CodeGroup>

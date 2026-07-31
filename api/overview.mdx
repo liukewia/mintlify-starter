@@ -1,0 +1,110 @@
+---
+title: 'Octop REST and WebSocket API: Endpoints and Access Guide'
+sidebarTitle: 'Overview'
+description: 'Octop exposes a full REST API and WebSocket chat endpoint at /api. Enable interactive Scalar docs at /api/docs for live exploration.'
+---
+
+Octop exposes every feature through an HTTP and WebSocket API mounted at the `/api` prefix. All endpoints require a JWT bearer token — obtained via `POST /api/auth/login` — except health, setup, and auth routes. Responses are JSON unless the endpoint emits a Server-Sent Events stream (`text/event-stream`) or raw bytes (audio, file downloads).
+
+## Base URL
+
+```
+http://127.0.0.1:8088/api
+```
+
+Replace `127.0.0.1:8088` with your server's host and port if you changed the defaults via `OCTOP_PORT` or `--host`/`--port`.
+
+## Interactive API docs
+
+Octop ships the [Scalar](https://scalar.com/) interface for live API exploration. It is **disabled by default**. To enable it:
+
+1. Open `~/.octop/config.json`.
+2. Set `"enable_api_docs": true`.
+3. Restart Octop (`octop run`).
+4. Visit `http://127.0.0.1:8088/api/docs`.
+
+The raw OpenAPI schema is always available — no configuration required — at:
+
+```
+http://127.0.0.1:8088/api/openapi.json
+```
+
+<Tip>
+  You can also enable interactive docs by setting the environment variable `OCTOP_ENABLE_API_DOCS=1` before starting the server, without editing `config.json`.
+</Tip>
+
+## Authentication overview
+
+Obtain a token by posting credentials to `POST /api/auth/login`. Then pass it in the `Authorization` header on every subsequent request:
+
+```
+Authorization: Bearer <your_access_token>
+```
+
+See the [Authentication](/api/authentication) page for the full login flow, token expiry details, and error handling.
+
+## Public endpoints
+
+The following routes do **not** require a token:
+
+| Path | Description |
+|------|-------------|
+| `/api/health` | Server health and version |
+| `/api/auth/login` | Obtain a JWT token |
+| `/api/setup/*` | First-run setup wizard |
+| `/api/openapi.json` | OpenAPI schema |
+| `/api/docs` | Interactive Scalar docs (when enabled) |
+| `/api/connectors/oauth/callback` | OAuth redirect target |
+| `/api/internal/mcp/*` | Internal MCP gateway (network-isolated) |
+
+All other routes require a valid JWT token. Non-setup routes are additionally blocked until the first-run wizard completes.
+
+## Auth level legend
+
+Every endpoint in the API docs carries one of the following auth levels:
+
+| Level | Meaning |
+|-------|---------|
+| **public** | No token required |
+| **user** | Any logged-in account |
+| **owner** | The user who owns the resource, or an admin |
+| **admin** | Admin role required |
+
+## Rate limiting
+
+Login attempts are rate-limited to protect against brute-force attacks. The defaults are **5 attempts** before a **15-minute lockout**. Configure the thresholds with the environment variables `OCTOP_LOGIN_MAX_ATTEMPTS` and `OCTOP_LOGIN_LOCKOUT_SECONDS`. An admin can clear a lockout immediately by calling `POST /api/users/{id}/unlock-login`.
+
+## Health check
+
+Verify that your Octop instance is reachable before making authenticated calls:
+
+```bash
+curl http://127.0.0.1:8088/api/health
+# {"status": "ok", "version": "0.9.16"}
+```
+
+## Explore the API sections
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api/authentication">
+    Log in, manage tokens, change passwords, and understand error codes.
+  </Card>
+  <Card title="Agents" icon="robot" href="/api/agents">
+    Create, configure, start, stop, and manage AI agents.
+  </Card>
+  <Card title="Chat" icon="message" href="/api/chat">
+    Send messages and stream responses over the WebSocket chat endpoint.
+  </Card>
+  <Card title="Channels" icon="plug" href="/api/channels">
+    Connect agents to Feishu, DingTalk, Discord, WeCom, and more.
+  </Card>
+  <Card title="Providers" icon="microchip" href="/api/providers">
+    Configure LLM providers and manage model routing.
+  </Card>
+  <Card title="Cron" icon="clock" href="/api/cron">
+    Schedule automated tasks with cron expressions or interval aliases.
+  </Card>
+  <Card title="Users & Admin" icon="users" href="/api/users-admin">
+    Manage user accounts, roles, and platform-wide admin operations.
+  </Card>
+</CardGroup>

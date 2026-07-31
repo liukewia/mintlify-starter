@@ -1,0 +1,51 @@
+---
+title: "Octop config.json 参考：所有服务器配置字段"
+sidebarTitle: "配置文件"
+description: "Octop 读取 ~/.octop/config.json 进行服务器设置。从此文件配置端口、CORS、时区、数据库后端和 TLS。"
+---
+
+Octop 在 `~/.octop/config.json` 中读取服务器配置。未设置的字段会使用合理的默认值。
+
+## 完整示例
+
+```json
+{
+  "port": 8088,
+  "host": "127.0.0.1",
+  "cors_origins": ["*"],
+  "timezone": "Asia/Shanghai",
+  "database": {
+    "backend": "sqlite",
+    "path": "~/.octop/octop.db"
+  },
+  "tls": {
+    "enabled": false,
+    "cert_path": "",
+    "key_path": ""
+  }
+}
+```
+
+## 字段参考
+
+| 字段 | 类型 | 默认值 | 描述 |
+| --- | --- | --- | --- |
+| `port` | number | `8088` | HTTP 服务器监听端口 |
+| `host` | string | `127.0.0.1` | 绑定的网络接口地址 |
+| `cors_origins` | string\[\] | `["*"]` | 允许的 CORS 来源列表 |
+| `timezone` | string | 系统时区 | 定时任务和时间戳使用的 IANA 时区 |
+| `database.backend` | string | `sqlite` | 数据库后端类型 |
+| `database.path` | string | `~/.octop/octop.db` | 数据库文件路径 |
+| `tls.enabled` | boolean | `false` | 是否启用 HTTPS |
+| `tls.cert_path` | string | — | TLS 证书文件路径 |
+| `tls.key_path` | string | — | TLS 私钥文件路径 |
+
+<Note>
+  任何 `config.json` 字段都可以通过对应的环境变量覆盖。详情参阅[环境变量](/zh/configuration/environment-variables)。
+</Note>
+
+修改配置文件后，需要重启 Octop 以使其生效：
+
+```bash
+octop service restart
+```

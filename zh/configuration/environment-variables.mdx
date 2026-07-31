@@ -1,0 +1,35 @@
+---
+title: "Octop 环境变量：完整配置参考"
+sidebarTitle: "环境变量"
+description: "使用环境变量覆盖任何 Octop config.json 字段。适用于 Docker、CI 流水线以及不希望将密钥存入文件系统的场景。"
+---
+
+任何 Octop `config.json` 字段都可以通过环境变量覆盖。这对 Docker、CI 流水线以及不希望将密钥写入文件系统的场景很理想。
+
+## 变量列表
+
+| 环境变量 | 对应配置字段 | 描述 |
+| --- | --- | --- |
+| `OCTOP_PORT` | `port` | HTTP 监听端口 |
+| `OCTOP_HOST` | `host` | 绑定的网络接口 |
+| `OCTOP_CORS_ORIGINS` | `cors_origins` | 逗号分隔的 CORS 来源列表 |
+| `OCTOP_TIMEZONE` | `timezone` | IANA 时区名称 |
+| `OCTOP_DB_BACKEND` | `database.backend` | 数据库后端类型 |
+| `OCTOP_DB_PATH` | `database.path` | 数据库文件路径 |
+| `OCTOP_TLS_ENABLED` | `tls.enabled` | 是否启用 HTTPS |
+| `OCTOP_TLS_CERT_PATH` | `tls.cert_path` | TLS 证书路径 |
+| `OCTOP_TLS_KEY_PATH` | `tls.key_path` | TLS 私钥路径 |
+| `OPENAI_API_KEY` | — | 默认 OpenAI 提供商的 API 密钥 |
+| `DASHSCOPE_API_KEY` | — | DashScope（通义千问）API 密钥 |
+
+## 优先级
+
+环境变量的优先级**高于** `config.json` 中的对应字段。这使得您可以在不修改配置文件的情况下，临时覆盖某个环境中的设置。
+
+```bash
+OCTOP_PORT=9000 OCTOP_HOST=0.0.0.0 octop run
+```
+
+<Tip>
+  在 Docker 部署中，环境变量是传递配置的推荐方式——参阅[Docker 部署指南](/zh/quickstart-docker)中的完整变量表。
+</Tip>

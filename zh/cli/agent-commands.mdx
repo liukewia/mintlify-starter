@@ -1,0 +1,52 @@
+---
+title: "Octop CLI：智能体、聊天、技能与模型命令"
+sidebarTitle: "智能体命令"
+description: "创建和管理智能体，启动交互式聊天会话，启用或禁用技能，并从 octop CLI 配置 LLM 提供商。"
+---
+
+创建和管理智能体，启动交互式聊天会话，启用或禁用技能，并从 `octop` CLI 配置 LLM 提供商。
+
+## `octop agent`
+
+```bash
+octop agent create --name my-agent
+octop agent list
+octop agent delete <agent-name>
+octop agent model set <agent-name> --provider openai --model gpt-4o
+octop agent persona set <agent-name> --persona INTJ
+octop agent expert set <agent-name> --expert code-reviewer
+```
+
+## `octop chat`
+
+与智能体开始交互式终端聊天会话。
+
+```bash
+octop chat [--agent my-agent]
+```
+
+若未指定 `--agent`，则使用默认的 `main` 智能体。
+
+## `octop agent skill`
+
+启用或禁用智能体的技能。
+
+```bash
+octop agent skill enable <agent-name> --skill browser
+octop agent skill disable <agent-name> --skill terminal
+octop agent skill list <agent-name>
+```
+
+## `octop provider`
+
+管理 LLM 提供商。
+
+```bash
+octop provider add --name openai --api-key sk-...
+octop provider list
+octop provider remove <provider-name>
+```
+
+<Tip>
+  使用 `octop agent list --json` 可以得到机器可读的输出，便于在脚本中解析。
+</Tip>
