@@ -1,10 +1,10 @@
 ---
 title: "如何备份并完整恢复您的 Octop 数据"
 sidebarTitle: "备份与恢复"
-description: "导出包含 SQLite 数据库、智能体工作区和配置文件的完整 Octop 备份。在运行 Octop 的任何机器上恢复全部数据。"
+description: "导出包含 SQLite 数据库、专家工作区和配置文件的完整 Octop 备份。在运行 Octop 的任何机器上恢复全部数据。"
 ---
 
-导出一份包含 SQLite 数据库、智能体工作区和配置文件的完整 Octop 备份，并在任何运行 Octop 的机器上完整恢复。
+导出一份包含 SQLite 数据库、专家工作区和配置文件的完整 Octop 备份，并在任何运行 Octop 的机器上完整恢复。
 
 ## 创建备份
 
@@ -16,7 +16,7 @@ octop backup create --output ./octop-backup.tar.gz
 
 - `~/.octop/octop.db` —— 主数据库
 - `~/.octop/secrets/` —— JWT 密钥和其他敏感文件
-- `~/.octop/agents/` —— 每个智能体的工作区
+- `~/.octop/agents/` —— 每个专家的工作区
 - `~/.octop/config.json` —— 服务器配置
 
 ## 定期自动备份

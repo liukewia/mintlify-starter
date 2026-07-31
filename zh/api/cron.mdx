@@ -1,10 +1,10 @@
 ---
-title: "Octop 定时任务 API：通过 REST 计划自动化智能体任务"
+title: "Octop 定时任务 API：通过 REST 计划自动化专家任务"
 sidebarTitle: "定时任务"
-description: "使用 Octop 的 /api/agents/{agent_id}/cron 端点，通过 cron 表达式、间隔或一次性日期计划自动化智能体任务。"
+description: "使用 Octop 的 /api/agents/{agent_id}/cron 端点，通过 cron 表达式、间隔或一次性日期计划自动化专家任务。"
 ---
 
-使用 cron 表达式、间隔或一次性日期计划智能体任务，实现自动化。
+使用 cron 表达式、间隔或一次性日期计划专家任务，实现自动化。
 
 ## 基地路径
 
@@ -72,11 +72,11 @@ curl -X POST http://127.0.0.1:8088/api/agents/1/cron \
 </ParamField>
 
 <ParamField body="prompt" type="string" required>
-  触发时发送给智能体的提示词。最大 2000 个字符。
+  触发时发送给专家的提示词。最大 2000 个字符。
 </ParamField>
 
 <ParamField body="task_type" type="string">
-  `"agent"`（完整智能体回合）或 `"text"`（简单文本生成）。
+  `"agent"`（完整专家回合）或 `"text"`（简单文本生成）。
 </ParamField>
 
 <ParamField body="session_key" type="string">

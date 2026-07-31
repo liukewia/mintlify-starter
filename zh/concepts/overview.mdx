@@ -9,29 +9,29 @@ Octop 采用单进程架构。一个 Python 进程同时承载 Web 仪表盘、R
 ## 核心组件
 
 <CardGroup cols={2}>
-  <Card title="智能体" icon="user-robot" href="/zh/concepts/agents">
-    每个用户可以创建多个智能体，每个智能体拥有自己的工作区、LLM 提供商和技能组合
+  <Card title="专家" icon="user-robot" href="/zh/concepts/agents">
+    每个用户可以创建多个专家，每个专家拥有自己的工作区、LLM 提供商和技能组合
   </Card>
 
   <Card title="IM 渠道" icon="comments" href="/zh/concepts/channels">
-    将飞书、钉钉、QQ、Discord、企业微信等消息平台连接到您的智能体
+    将飞书、钉钉、QQ、Discord、企业微信等消息平台连接到您的专家
   </Card>
 
   <Card title="连接器" icon="plug" href="/zh/concepts/connectors">
-    通过 OAuth 应用和 MCP 网关扩展智能体的能力
+    通过 OAuth 应用和 MCP 网关扩展专家的能力
   </Card>
 
   <Card title="专家与人格" icon="masks-theater" href="/zh/concepts/experts-personas">
-    使用 MBTI 人格模板和内置专家库塑造智能体的思考与沟通方式
+    使用 MBTI 人格模板和内置专家库塑造专家的思考与沟通方式
   </Card>
 </CardGroup>
 
 ## 请求如何流转
 
 1. 请求通过 Web 仪表盘、IM 渠道或 REST/WebSocket API 到达服务器。
-2. 服务器根据用户和智能体身份将请求路由到对应的智能体运行时。
-3. 智能体运行时加载其配置的 LLM 提供商、技能和已启用的连接器。
-4. 智能体处理请求，可能调用技能或连接器，并将结果通过原始渠道流式返回。
+2. 服务器根据用户和专家身份将请求路由到对应的专家运行时。
+3. 专家运行时加载其配置的 LLM 提供商、技能和已启用的连接器。
+4. 专家处理请求，可能调用技能或连接器，并将结果通过原始渠道流式返回。
 5. 对话历史和状态持久化写入同一个 SQLite 数据库。
 
 <Note>
@@ -40,4 +40,4 @@ Octop 采用单进程架构。一个 Python 进程同时承载 Web 仪表盘、R
 
 ## 多用户模型
 
-Octop 支持在同一个服务器实例上运行多个用户账户。每个用户可以创建自己的智能体，智能体之间彼此隔离——工作区、凭据和对话历史互不可见。管理员账户可以管理所有用户和系统设置。
+Octop 支持在同一个服务器实例上运行多个用户账户。每个用户可以创建自己的专家，专家之间彼此隔离——工作区、凭据和对话历史互不可见。管理员账户可以管理所有用户和系统设置。

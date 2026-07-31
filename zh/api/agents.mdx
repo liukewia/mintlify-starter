@@ -1,10 +1,10 @@
 ---
-title: "Octop 智能体 API：创建、配置与控制智能体"
-sidebarTitle: "智能体"
-description: "使用 Octop 的 /api/agents 端点创建、配置、启动、停止和重新加载 AI 智能体，包含专家模板和 MBTI 人格端点。"
+title: "Octop 专家 API：创建、配置与控制专家"
+sidebarTitle: "专家"
+description: "使用 Octop 的 /api/agents 端点创建、配置、启动、停止和重新加载 AI 专家，包含专家模板和 MBTI 人格端点。"
 ---
 
-使用智能体 API 创建、配置、启动、停止并重新加载 Octop 智能体。每个智能体都拥有自己的持久化状态、模型配置和人格。
+使用专家 API 创建、配置、启动、停止并重新加载 Octop 专家。每个专家都拥有自己的持久化状态、模型配置和人格。
 
 ## 基地路径
 
@@ -16,26 +16,26 @@ description: "使用 Octop 的 /api/agents 端点创建、配置、启动、停�
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
-| GET | `/agents` | 列出所有智能体 |
-| POST | `/agents` | 创建新智能体 |
-| GET | `/agents/{id}` | 获取单个智能体详情 |
-| PATCH | `/agents/{id}` | 更新智能体配置 |
-| DELETE | `/agents/{id}` | 删除智能体 |
-| POST | `/agents/{id}/start` | 启动智能体运行时 |
-| POST | `/agents/{id}/stop` | 停止智能体运行时 |
-| POST | `/agents/{id}/reload` | 重新加载智能体配置 |
+| GET | `/agents` | 列出所有专家 |
+| POST | `/agents` | 创建新专家 |
+| GET | `/agents/{id}` | 获取单个专家详情 |
+| PATCH | `/agents/{id}` | 更新专家配置 |
+| DELETE | `/agents/{id}` | 删除专家 |
+| POST | `/agents/{id}/start` | 启动专家运行时 |
+| POST | `/agents/{id}/stop` | 停止专家运行时 |
+| POST | `/agents/{id}/reload` | 重新加载专家配置 |
 | POST | `/agents/{id}/read` | 将频道标记为已读 |
 | GET | `/agents/{id}/status` | 获取运行时状态 |
-| POST | `/agents/from-expert/{expert_id}` | 从专家模板创建智能体 |
+| POST | `/agents/from-expert/{expert_id}` | 从专家模板创建专家 |
 
-## 列出智能体
+## 列出专家
 
 ```bash
 curl http://127.0.0.1:8088/api/agents \
   -H 'Authorization: Bearer <token>'
 ```
 
-## 创建智能体
+## 创建专家
 
 ```bash
 curl -X POST http://127.0.0.1:8088/api/agents \
@@ -45,22 +45,22 @@ curl -X POST http://127.0.0.1:8088/api/agents \
     "name": "客服助手",
     "persona_mbti": "ENFJ",
     "default_model": "gpt-4o",
-    "description": "处理客户支持请求的智能体"
+    "description": "处理客户支持请求的专家"
   }'
 ```
 
 ### 请求字段
 
 <ParamField body="name" type="string" required>
-  智能体的人类可读名称。
+  专家的人类可读名称。
 </ParamField>
 
 <ParamField body="persona_mbti" type="string">
-  旋定智能体行为风格的 MBTI 人格代码（例如 `"ENFP"`）。
+  旋定专家行为风格的 MBTI 人格代码（例如 `"ENFP"`）。
 </ParamField>
 
 <ParamField body="default_model" type="string">
-  默认用于此智能体对话的模型名称。
+  默认用于此专家对话的模型名称。
 </ParamField>
 
 <ParamField body="system_prompt" type="string">
@@ -68,16 +68,16 @@ curl -X POST http://127.0.0.1:8088/api/agents \
 </ParamField>
 
 <ParamField body="description" type="string">
-  智能体用途的简短描述。
+  专家用途的简短描述。
 </ParamField>
 
 <ParamField body="template_name" type="string">
-  创建智能体时应用的可选模板名称。
+  创建专家时应用的可选模板名称。
 </ParamField>
 
 ## 启动与停止
 
-启动或停止智能体的运行时：
+启动或停止专家的运行时：
 
 ```bash
 curl -X POST http://127.0.0.1:8088/api/agents/1/start \
@@ -95,9 +95,9 @@ curl http://127.0.0.1:8088/api/agents/1/status \
 # {"state": "running", "last_error": null, ...}
 ```
 
-## 重新加载智能体
+## 重新加载专家
 
-在修改配置后重建智能体运行时，而无需完全重启：
+在修改配置后重建专家运行时，而无需完全重启：
 
 ```bash
 curl -X POST http://127.0.0.1:8088/api/agents/1/reload \
@@ -105,12 +105,12 @@ curl -X POST http://127.0.0.1:8088/api/agents/1/reload \
 ```
 
 <Note>
-  若该智能体当前有正在进行的操作（例如正在处理对话轮次），重新加载请求将返回 `409 AGENT_BUSY`。请在重试前等待当前操作完成。
+  若该专家当前有正在进行的操作（例如正在处理对话轮次），重新加载请求将返回 `409 AGENT_BUSY`。请在重试前等待当前操作完成。
 </Note>
 
 ## 从专家模板创建
 
-Octop 提供预制的专家模板，可以快速引导创建新智能体：
+Octop 提供预制的专家模板，可以快速引导创建新专家：
 
 ```bash
 curl -X POST http://127.0.0.1:8088/api/agents/from-expert/finance-advisor \
@@ -123,7 +123,7 @@ curl -X POST http://127.0.0.1:8088/api/agents/from-expert/finance-advisor \
 
 ## MBTI 人格代码
 
-Octop 使用 MBTI 人格代码来旋定智能体的沟通风格。
+Octop 使用 MBTI 人格代码来旋定专家的沟通风格。
 
 列出所有可用代码：
 
@@ -139,7 +139,7 @@ curl http://127.0.0.1:8088/api/mbti/codes/ENFP \
   -H 'Authorization: Bearer <token>'
 ```
 
-将人格应用到现有智能体并重新加载：
+将人格应用到现有专家并重新加载：
 
 ```bash
 curl -X PUT http://127.0.0.1:8088/api/agents/1/mbti \

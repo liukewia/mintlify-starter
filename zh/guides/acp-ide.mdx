@@ -1,10 +1,10 @@
 ---
-title: "使用 ACP 协议将您的 IDE 连接到 Octop 智能体"
+title: "使用 ACP 协议将您的 IDE 连接到 Octop 专家"
 sidebarTitle: "IDE 集成"
-description: "使用 ACP 让 Zed、OpenCode 或 a helpful coding assistant 与您的 Octop 智能体对话，或让 Octop 将编码任务委托给外部 AI 编码工具。"
+description: "使用 ACP 让 Zed、OpenCode 或 a helpful coding assistant 与您的 Octop 专家对话，或让 Octop 将编码任务委托给外部 AI 编码工具。"
 ---
 
-ACP（Agent Client Protocol）让 Octop 智能体与支持该协议的 IDE 和编码工具互通。您可以在 Zed、OpenCode 或 a helpful coding assistant 中直接与您的 Octop 智能体对话，也可以让 Octop 将编码任务委托给外部 AI 编码工具。
+ACP（Agent Client Protocol）让 Octop 专家与支持该协议的 IDE 和编码工具互通。您可以在 Zed、OpenCode 或 a helpful coding assistant 中直接与您的 Octop 专家对话，也可以让 Octop 将编码任务委托给外部 AI 编码工具。
 
 ## 从 IDE 连接到 Octop
 
@@ -14,12 +14,12 @@ ACP（Agent Client Protocol）让 Octop 智能体与支持该协议的 IDE 和�
 octop acp serve --agent my-agent
 ```
 
-该命令会启动一个本地 ACP 服务，您的 IDE 可以连接到它，就像连接到其他 AI 编码代理一样。您在 IDE 中发出的每一条消息都会由您的 Octop 智能体处理，它可以读写文件、执行命令，并使用其已配置的技能和连接器。
+该命令会启动一个本地 ACP 服务，您的 IDE 可以连接到它，就像连接到其他 AI 编码代理一样。您在 IDE 中发出的每一条消息都会由您的 Octop 专家处理，它可以读写文件、执行命令，并使用其已配置的技能和连接器。
 
 ## 从 Octop 委托编码任务
 
-反过来，Octop 智能体也可以将特定任务委托给外部 AI 编码工具处理，当这些工具具备更强的编码能力时。这让您可以在聊天界面中发布编码任务，并让它在底层由专业化的开发工具完成。
+反过来，Octop 专家也可以将特定任务委托给外部 AI 编码工具处理，当这些工具具备更强的编码能力时。这让您可以在聊天界面中发布编码任务，并让它在底层由专业化的开发工具完成。
 
 <Note>
-  ACP 是一个开放协议，旨在标准化 AI 代理与开发环境之间的通信。任何支持 ACP 的工具都可以与 Octop 智能体互通。
+  ACP 是一个开放协议，旨在标准化 AI 代理与开发环境之间的通信。任何支持 ACP 的工具都可以与 Octop 专家互通。
 </Note>
