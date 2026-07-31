@@ -1,10 +1,10 @@
 ---
 title: "Octop 对话 API：WebSocket 流式传输与线程管理"
 sidebarTitle: "对话"
-description: "通过 WebSocket 与 Octop 智能体对话并流式接收回复，并使用线程管理端点组织对话历史。"
+description: "通过 WebSocket 与 Octop 专家对话并流式接收回复，并使用线程管理端点组织对话历史。"
 ---
 
-通过 WebSocket 与智能体对话，实时流式接收回复，并管理对话线程。
+通过 WebSocket 与专家对话，实时流式接收回复，并管理对话线程。
 
 ## WebSocket 端点
 
@@ -16,7 +16,7 @@ WS /api/agents/{id}/chat/ws?token=<jwt>
 
 ## 消息帧
 
-向智能体发送一轮对话：
+向专家发送一轮对话：
 
 ```json
 {"type": "user_turn", "content": "你好！", "thread_id": "abc123"}

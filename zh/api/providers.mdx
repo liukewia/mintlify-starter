@@ -1,10 +1,10 @@
 ---
 title: "Octop 提供商 API：配置 LLM 提供商与模型"
 sidebarTitle: "提供商"
-description: "使用 Octop 的 /api/providers 端点配置 LLM 提供商、测试连接并选择当前活动模型。"
+description: "配置 LLM 提供商，选择可用模型，并控制专家使用的默认模型。"
 ---
 
-配置 LLM 提供商，选择可用模型，并控制智能体使用的默认模型。
+配置 LLM 提供商，选择可用模型，并控制专家使用的默认模型。
 
 ## 个人级 vs 全局级提供商
 
@@ -109,7 +109,7 @@ curl -X PUT http://127.0.0.1:8088/api/models/active \
 ```
 
 <Warning>
-  删除仍被一个或多个智能体引用的提供商将返回 `409 PROVIDER_REFERENCED`。请先将受影响智能体重新指定到其他提供商。
+  删除仍被一个或多个专家引用的提供商将返回 `409 PROVIDER_REFERENCED`。请先将受影响专家重新指定到其他提供商。
 </Warning>
 
 <Expandable title="管理员共享提供商">
@@ -125,5 +125,5 @@ curl -X PUT http://127.0.0.1:8088/api/models/active \
 | GET | `/acp/{runner_name}` | 获取运行时详情 |
 | PUT | `/acp/{runner_name}` | 更新运行时 |
 | DELETE | `/acp/{runner_name}` | 删除运行时 |
-| GET | `/agents/{aid}/acp` | 获取智能体的 ACP 配置 |
-| PUT | `/agents/{aid}/acp` | 设置智能体的 ACP 配置 |
+| GET | `/agents/{aid}/acp` | 获取专家的 ACP 配置 |
+| PUT | `/agents/{aid}/acp` | 设置专家的 ACP 配置 |

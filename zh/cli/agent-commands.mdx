@@ -1,10 +1,10 @@
 ---
-title: "Octop CLI：智能体、聊天、技能与模型命令"
-sidebarTitle: "智能体命令"
-description: "创建和管理智能体，启动交互式聊天会话，启用或禁用技能，并从 octop CLI 配置 LLM 提供商。"
+title: "Octop CLI：专家、聊天、技能与模型命令"
+sidebarTitle: "专家命令"
+description: "创建和管理专家，启动交互式聊天会话，启用或禁用技能，并从 octop CLI 配置 LLM 提供商。"
 ---
 
-创建和管理智能体，启动交互式聊天会话，启用或禁用技能，并从 `octop` CLI 配置 LLM 提供商。
+创建和管理专家，启动交互式聊天会话，启用或禁用技能，并从 `octop` CLI 配置 LLM 提供商。
 
 ## `octop agent`
 
@@ -19,17 +19,17 @@ octop agent expert set <agent-name> --expert code-reviewer
 
 ## `octop chat`
 
-与智能体开始交互式终端聊天会话。
+与专家开始交互式终端聊天会话。
 
 ```bash
 octop chat [--agent my-agent]
 ```
 
-若未指定 `--agent`，则使用默认的 `main` 智能体。
+若未指定 `--agent`，则使用默认的 `main` 专家。
 
 ## `octop agent skill`
 
-启用或禁用智能体的技能。
+启用或禁用专家的技能。
 
 ```bash
 octop agent skill enable <agent-name> --skill browser

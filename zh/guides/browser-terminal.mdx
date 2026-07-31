@@ -8,7 +8,7 @@ Octop 包含两项高级能力：**浏览器 AI\+**（用于网页自动化和�
 
 ## 浏览器 AI\+
 
-浏览器 AI\+ 内置了无头 Chromium 会话，让智能体可以：
+浏览器 AI\+ 内置了无头 Chromium 会话，让专家可以：
 
 - 浏览网页并提取内容
 - 填写表单并与页面交互
@@ -20,7 +20,7 @@ Octop 包含两项高级能力：**浏览器 AI\+**（用于网页自动化和�
 curl -fsSL https://finnie-1258344699.cos.ap-guangzhou.myqcloud.com/octop/install.sh | bash -s -- --extras browser
 ```
 
-启用后，智能体可以在对话中直接调用浏览器技能：
+启用后，专家可以在对话中直接调用浏览器技能：
 
 ```bash
 octop agent skill enable my-agent --skill browser
@@ -28,16 +28,16 @@ octop agent skill enable my-agent --skill browser
 
 ## 终端 AI\+
 
-终端 AI\+ 在 Web 仪表盘中内建了一个终端会话面板，让智能体可以代表您执行 shell 命令。这对于自动化系统管理任务、运行脚本或调试服务很有用。
+终端 AI\+ 在 Web 仪表盘中内建了一个终端会话面板，让专家可以代表您执行 shell 命令。这对于自动化系统管理任务、运行脚本或调试服务很有用。
 
 ```bash
 octop agent skill enable my-agent --skill terminal
 ```
 
 <Warning>
-  终端 AI\+ 让智能体能够在您机器上执行任意命令。仅在信任的智能体和可控的环境中启用此技能。
+  终端 AI\+ 让专家能够在您机器上执行任意命令。仅在信任的专家和可控的环境中启用此技能。
 </Warning>
 
 <Tip>
-  可以在 Web 仪表盘中实时观察浏览器会话和终端会话的实际执行过程，方便调试和审核智能体的行为。
+  可以在 Web 仪表盘中实时观察浏览器会话和终端会话的实际执行过程，方便调试和审核专家的行为。
 </Tip>
