@@ -1,10 +1,10 @@
 ---
 title: "Octop 如何运作：架构概览"
 sidebarTitle: "概览"
-description: "了解 Octop 的单进程模型：一个服务器同时运行 Web 界面、CLI、IM 渠道和定时任务，共享同一个数据库。"
+description: "了解 Octop 的单进程模型：一个服务器同时运行页面、CLI、IM 渠道和定时任务，共享同一个数据库。"
 ---
 
-Octop 采用单进程架构。一个 Python 进程同时承载 Web 仪表盘、REST/WebSocket API、IM 渠道监听器和定时任务调度器——所有功能共享同一个 SQLite 数据库和同一套配置。
+Octop 采用单进程架构。一个 Python 进程同时承载页面、REST/WebSocket API、IM 渠道监听器和定时任务调度器——所有功能共享同一个 SQLite 数据库和同一套配置。
 
 ## 核心组件
 
@@ -14,7 +14,7 @@ Octop 采用单进程架构。一个 Python 进程同时承载 Web 仪表盘、R
   </Card>
 
   <Card title="IM 渠道" icon="comments" href="/zh/concepts/channels">
-    将飞书、钉钉、QQ、Discord、企业微信等消息平台连接到您的专家
+    将飞书、企业微信、钉钉、QQ、微信、Telegram 等消息平台连接到您的专家
   </Card>
 
   <Card title="连接器" icon="plug" href="/zh/concepts/connectors">
@@ -28,7 +28,7 @@ Octop 采用单进程架构。一个 Python 进程同时承载 Web 仪表盘、R
 
 ## 请求如何流转
 
-1. 请求通过 Web 仪表盘、IM 渠道或 REST/WebSocket API 到达服务器。
+1. 请求通过页面、IM 渠道或 REST/WebSocket API 到达服务器。
 2. 服务器根据用户和专家身份将请求路由到对应的专家运行时。
 3. 专家运行时加载其配置的 LLM 提供商、技能和已启用的连接器。
 4. 专家处理请求，可能调用技能或连接器，并将结果通过原始渠道流式返回。

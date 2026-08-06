@@ -7,7 +7,7 @@ description: "通过 POST /api/auth/login 获取 JWT 访问令牌，然后在对
 除 `/api/health`、`/api/setup/*` 和 OpenAPI 模式外，每个 Octop API 调用都需要 JWT 访问令牌。通过凭据登录获取令牌，然后在后续每个请求的 `Authorization` 头中包含它。令牌默认 24 小时后过期；重新登录即可获取新令牌。
 
 <Warning>
-  默认凭据为 `admin` / `octop`。完成设置向导后请立即修改管理员密码——否则任何能够访问您 Octop 实例的网络用户都可以以管理员身份认证。
+  全新安装请先运行 `octop init`，再完成设置向导：到用户主目录打开 `~/octop-login.txt` 读取一次性设置密码，然后自行创建管理员用户名和密码。不存在固定的 `admin` / `octop` 默认登录对。API 登录请使用您在向导中设置的凭据。
 </Warning>
 
 ## 登录并获取令牌
@@ -21,7 +21,7 @@ description: "通过 POST /api/auth/login 获取 JWT 访问令牌，然后在对
     ```bash cURL
     curl -X POST http://127.0.0.1:8088/api/auth/login \
       -H 'Content-Type: application/json' \
-      -d '{"username": "admin", "password": "octop"}'
+      -d '{"username": "<your_username>", "password": "<your_password>"}'
     ```
 
     ```python Python
@@ -29,7 +29,7 @@ description: "通过 POST /api/auth/login 获取 JWT 访问令牌，然后在对
     
     resp = requests.post(
         "http://127.0.0.1:8088/api/auth/login",
-        json={"username": "admin", "password": "octop"},
+        json={"username": "<your_username>", "password": "<your_password>"},
     )
     token = resp.json()["access_token"]
     ```
@@ -76,11 +76,11 @@ description: "通过 POST /api/auth/login 获取 JWT 访问令牌，然后在对
 ### 登录请求字段
 
 <ParamField body="username" type="string" required>
-  账户用户名。默认管理员用户名为 `admin`。
+  账户用户名。使用您在设置向导中创建的用户名（或之后通过用户管理创建的账户）。
 </ParamField>
 
 <ParamField body="password" type="string" required>
-  账户密码。默认管理员密码为 `octop`。
+  账户密码。使用您在设置向导中设置的密码（或之后重置的密码）。
 </ParamField>
 
 ### 登录响应字段
@@ -106,7 +106,7 @@ description: "通过 POST /api/auth/login 获取 JWT 访问令牌，然后在对
     </ResponseField>
 
     <ResponseField name="user.display_name" type="string">
-      在Web 界面中显示的人类可读显示名称。
+      在页面中显示的人类可读显示名称。
     </ResponseField>
   </Expandable>
 </ResponseField>

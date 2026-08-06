@@ -4,7 +4,7 @@ sidebarTitle: 'Agent Commands'
 description: 'Create and manage agents, start interactive chat sessions, enable or disable skills, and configure LLM providers from the octop CLI.'
 ---
 
-The CLI gives you full control over agents and conversations. Create agents from scratch or from bundled expert templates, start interactive chat sessions directly in the terminal, configure skills, manage LLM providers, and pick active models — all without opening the web dashboard.
+The CLI gives you full control over agents and conversations. Create agents from scratch or from bundled expert templates, start interactive chat sessions directly in the terminal, configure skills, manage LLM providers, and pick active models — all without opening the web UI.
 
 ## `octop agent`
 
@@ -200,3 +200,29 @@ octop provider delete
 <Note>
   `octop provider list`, `create`, and `delete` operate offline against `~/.octop/octop.db`. Only `octop provider test` requires a running server, because it sends a live ping to the provider API.
 </Note>
+
+---
+
+## `octop acp`
+
+Expose an Octop agent as a stdio JSON-RPC ACP server. Boots a standalone `OctopServer` (reads `~/.octop/`); does **not** require `octop run` to be running.
+
+<CodeGroup>
+```bash Expose the default agent
+octop acp
+```
+```bash Specify an agent and enable debug logging
+octop acp --agent myagent --debug
+```
+</CodeGroup>
+
+### Options
+
+| Option | Description |
+|---|---|
+| `--agent TEXT` | Agent to expose (default: `OCTOP_AGENT` or first agent) |
+| `--debug` | Log to stderr |
+
+<Tip>
+  For the Zed setup example and runner object schema, see [ACP IDE integration](/guides/acp-ide).
+</Tip>

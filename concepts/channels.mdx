@@ -1,61 +1,48 @@
 ---
-title: "IM Channels: Connect Octop to Your Messaging Apps"
+title: "Channels: Connect Octop to Your Messaging Apps"
 sidebarTitle: "Channels"
-description: "Octop supports Feishu, DingTalk, QQ, Discord, WeCom, and more. Each channel connects an IM platform to one of your agents."
+description: "Octop supports WeCom, Feishu, DingTalk, QQ, WeChat, Telegram, Yuanbao, Xiaoyi, and MQTT. Each channel connects one messaging platform to one of your agents."
 ---
 
-Channels connect your Octop agents to external IM platforms. Once a channel is configured, every message sent to that platform is routed through Octop's IM bridge and delivered to the specific agent the channel belongs to. A single agent can have multiple channels active at the same time — for example, the same agent can respond on both Feishu and Discord simultaneously.
+Channels connect your Octop agents to external messaging platforms. Once a channel is configured, every message sent to that platform is routed through Octop's IM bridge and delivered to the agent the channel belongs to. A single agent can have multiple channels active at the same time — the same agent can respond on both Feishu and Telegram, sharing one conversation context.
+
+<Frame>
+  ![Channels](/images/ui-channels.png "Channels")
+</Frame>
 
 ## Supported channels
 
-| Channel | Required credentials |
+Octop ships nine channels:
+
+| Channel | What it connects |
 |---|---|
-| **Feishu** | App ID, App Secret |
-| **DingTalk** | App Key, App Secret |
-| **QQ** | Bot AppID, Token |
-| **Discord** | Bot Token |
-| **WeCom** | Corp ID, Agent Secret |
-| **Web Dashboard** | Enabled by default — no credentials required |
+| **WeChat** | Personal WeChat, receiving and replying to direct and group messages through an iLink Bot |
+| **QQ** | A QQ bot for direct and group messages |
+| **WeCom** | A WeCom bot for app messages, direct chats, and group chats |
+| **Feishu** | A Feishu bot for direct and group messages, synced both ways with the agent |
+| **Yuanbao** | Tencent Yuanbao, bringing agent capabilities into Yuanbao conversations |
+| **DingTalk** | A DingTalk bot for direct and group chats, suited to team workspaces |
+| **Telegram** | A Telegram bot for direct and group messages via the Bot API |
+| **Xiaoyi** | Huawei Xiaoyi (OpenClaw), connected over the A2A protocol to the voice assistant |
+| **MQTT** | Routes IoT device or robot messages to an agent |
 
 <Note>
-  The Web Dashboard channel is always available. You can start chatting with any agent immediately after creation without configuring an IM channel.
+  The web UI is always available for chat, so you can talk to any agent immediately after creating it without configuring a channel.
 </Note>
 
 ## Add a channel to an agent
 
-### Via the dashboard
+Channels are configured per agent under personalization:
 
-<Steps>
-  <Step title="Open the agent">
-    Navigate to **Agents** and select the agent you want to connect.
-  </Step>
-  <Step title="Open the Channels tab">
-    Click the **Channels** tab on the agent detail page.
-  </Step>
-  <Step title="Add a channel">
-    Click **Add Channel**, choose the platform, and enter the required credentials. Click **Save** to activate the channel.
-  </Step>
-</Steps>
-
-### Via the CLI
-
-Run the interactive channel setup wizard:
-
-```bash
-octop channel install
+```text
+Personalization → Channels
 ```
 
-The wizard prompts you to select a platform, choose which agent to attach it to, and enter the required credentials step by step.
+Pick the agent at the top of the page, toggle on the platform you want, and fill in that platform's credentials.
 
-<Note>
-  For Feishu, Octop provides a dedicated guided setup command that walks you through creating a bot in the Feishu developer console and configuring the webhook:
-
-  ```bash
-  octop channel feishu-setup
-  ```
-
-  This command explains each required credential and opens the relevant Feishu console pages in the correct order.
-</Note>
+<Tip>
+  For platform-by-platform credential steps, see [IM Channels](/guides/im-channels). For CLI setup, see [Channel & cron commands](/cli/channel-cron-commands#octop-channel).
+</Tip>
 
 ## How message routing works
 
@@ -78,20 +65,8 @@ User on Feishu
 ```
 
 <Warning>
-  Deleting a channel removes the connection immediately. Any in-flight messages on that platform will not receive a reply. Re-adding the channel restores routing without losing conversation history.
+  Disabling a channel stops routing immediately. Any in-flight messages on that platform will not receive a reply. Re-enabling it restores routing without losing conversation history.
 </Warning>
-
-## Manage existing channels
-
-```bash
-# List all configured channels
-octop channel list
-
-# Remove a channel by ID
-octop channel remove <channel_id>
-```
-
-You can also enable or disable individual channels from the agent's **Channels** tab in the dashboard without deleting them — useful if you want to temporarily pause a platform connection.
 
 ## Next steps
 
@@ -100,6 +75,6 @@ You can also enable or disable individual channels from the agent's **Channels**
     Review how to create and manage the agents your channels connect to.
   </Card>
   <Card title="Connectors" icon="plug" href="/concepts/connectors">
-    Extend your agents with OAuth apps and MCP gateways to reach external services.
+    Extend your agents with built-in connectors and custom MCP servers.
   </Card>
 </CardGroup>

@@ -1,65 +1,92 @@
 ---
 title: "在 Octop 中设置 IM 通道"
 sidebarTitle: "IM 通道"
-description: "将 Octop 专家连接到飞书、钉钉、QQ、Discord或企业微信，让您的团队可以从日常使用的平台上与 AI 专家发消息。"
+description: "将 Octop 专家连接到飞书、企业微信、钉钉、QQ、微信、Telegram 等平台，让您的团队在日常使用的工具里直接与 AI 专家对话。"
 ---
 
-将 Octop 专家连接到飞书、钉钉、QQ、Discord 或企业微信，让您的团队能在日常使用的平台上直接与 AI 专家对话。
+将 Octop 专家连接到飞书、企业微信、钉钉、QQ、微信、Telegram 等平台，让您的团队能在日常使用的工具里直接与 AI 专家对话。
 
-## 飞书
+## 在哪里配置
 
-1. 在[飞书开放平台](https://open.feishu.cn)创建一个企业自建应用
-2. 获取 App ID 和 App Secret
-3. 在事件订阅中启用机器人能力，并配置回调地址
-4. 在 Octop 中添加飞书渠道：
+通道按专家配置：
 
-```bash
-octop channel add --platform feishu --app-id xxx --app-secret xxx --agent my-agent
+```text
+个性化 → 通道
 ```
 
-## 钉钉
+在页面顶部选择专家，打开对应平台的开关并填写凭据。
 
-1. 在[钉钉开放平台](https://open.dingtalk.com)创建一个机器人应用
-2. 获取 Client ID 和 Client Secret
-3. 启用机器人消息接收权限
-4. 在 Octop 中添加钉钉渠道：
+<Frame>
+  ![通道](/images/ui-channels.png "通道")
+</Frame>
 
-```bash
-octop channel add --platform dingtalk --client-id xxx --client-secret xxx --agent my-agent
-```
+## 各平台接入步骤
 
-## QQ
+<Tabs>
+  <Tab title="飞书">
+    在[飞书开放平台](https://open.feishu.cn)创建企业自建应用，获取 **App ID** 和 **App Secret**。
 
-1. 在 QQ 机器人开放平台注册应用
-2. 获取 App ID 和 Token
-3. 在 Octop 中添加 QQ 渠道：
+    1. 在**个性化 → 通道**中打开**飞书**开关
+    2. 填入 App ID 和 App Secret
+    3. 将 Octop 显示的回调地址填入飞书应用的**事件订阅**，并保存飞书侧配置
+    4. 给机器人发一条消息，确认能收到回复
 
-```bash
-octop channel add --platform qq --app-id xxx --token xxx --agent my-agent
-```
+    也可以用终端向导完成同样的流程：
 
-## Discord
+    ```bash
+    octop channel feishu-setup
+    ```
+  </Tab>
 
-1. 在 [Discord 开发者门户](https://discord.com/developers)创建一个 Bot
-2. 复制 Bot Token
-3. 将 Bot 邀请到您的服务器
-4. 在 Octop 中添加 Discord 渠道：
+  <Tab title="企业微信">
+    在企业微信后台创建自建应用，获取 **CorpID**、**AgentID** 和 **Secret**。
 
-```bash
-octop channel add --platform discord --token xxx --agent my-agent
-```
+    1. 在**个性化 → 通道**中打开**企业微信**开关
+    2. 填入 CorpID、AgentID 和 Secret
+    3. 将 Octop 显示的回调 URL 配置到企业微信应用中
 
-## 企业微信
+    也可以运行 `octop channel bind`，用企业微信手机端扫码快速绑定。
+  </Tab>
 
-1. 在企业微信后台创建一个自建应用
-2. 获取 CorpID、AgentID 和 Secret
-3. 配置回调 URL 以接收消息
-4. 在 Octop 中添加企业微信渠道：
+  <Tab title="钉钉">
+    在[钉钉开放平台](https://open.dingtalk.com)创建机器人应用，获取 **Client ID** 和 **Client Secret**。
 
-```bash
-octop channel add --platform wecom --corp-id xxx --agent-id xxx --secret xxx --agent my-agent
-```
+    1. 在**个性化 → 通道**中打开**钉钉**开关
+    2. 填入 Client ID 和 Client Secret
+    3. 将 Octop 提供的回调地址配置到钉钉应用的**消息接收模式**，开启相应事件权限并保存
+  </Tab>
+
+  <Tab title="QQ">
+    在 QQ 机器人开放平台注册应用，获取 **App ID** 和 **Token**。
+
+    1. 在**个性化 → 通道**中打开 **QQ** 开关
+    2. 填入 App ID 和 Token 并保存
+  </Tab>
+
+  <Tab title="Telegram">
+    通过 [@BotFather](https://t.me/BotFather) 创建 Bot，复制 **Bot Token**。
+
+    1. 在**个性化 → 通道**中打开 **Telegram** 开关
+    2. 填入 Bot Token 并保存
+
+    Octop 通过 Telegram Bot API 接入，支持私聊与群组消息。
+
+    <Warning>
+      请妥善保管 Bot Token。一旦泄露，请立即在 BotFather 中重置并更新 Octop 中的配置。
+    </Warning>
+  </Tab>
+
+  <Tab title="其他">
+    Octop 还提供**微信**（通过 iLink Bot 接入个人微信）、**元宝**（腾讯元宝会话场景）、**小艺**（华为小艺 / OpenClaw，经 A2A 协议接入）和 **MQTT**（将 IoT 设备或机器人消息路由到 Agent）。
+
+    接入方式相同：在**个性化 → 通道**中打开开关，填写该平台所需的凭据即可。
+  </Tab>
+</Tabs>
 
 <Warning>
-  请将所有凭据安全存放。这些凭据授予对您 IM 平台账户的机器人控制权。
+  请将所有凭据安全存放。这些凭据授予对您平台账号的机器人控制权。
 </Warning>
+
+<Tip>
+  终端管理通道（`list`、`test`、`delete`、`feishu-setup`、`bind`）见[通道与定时任务](/zh/cli/channel-cron-commands#octop-channel)。
+</Tip>

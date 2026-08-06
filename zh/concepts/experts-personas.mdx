@@ -10,33 +10,39 @@ Octop 提供两种方式来塑造专家的“个性”：**MBTI 人格模板**�
 
 Octop 内置全部 16 种 MBTI 人格类型模板（如 INTJ、ENFP 等）。为专家分配一种人格后，它的回复语气、决策方式和沟通风格都会随之调整，同时保留其原有的技能和知识。
 
-<CodeGroup>
+人格按专家配置：
 
-```text 仪表盘
-专家 → 选择专家 → 人格 → 选择 MBTI 类型
+```text
+个性化 → MBTI
 ```
 
-```text CLI
-octop agent persona set my-agent --persona INTJ
-```
-
-</CodeGroup>
+在页面顶部选择专家，再从 16 种人格中挑选一种。每张卡片会展示该人格在四个 MBTI 维度上的倾向比例，并按分析家、外交家、守护者、探险家分组。
 
 <Frame>
-  ![Mbti](/images/mbti.png "Mbti")
+  ![MBTI](/images/ui-mbti.png "MBTI")
 </Frame>
+
+<Tip>
+  不确定该选哪种？点击 MBTI 页面右上角的**测一测**，回答一组简短问题，Octop 会根据答案推荐一种人格，您可以采纳或自行调整。
+</Tip>
 
 ## 专家模板
 
 专家模板是预先配置好的角色设定，为专家提供特定领域的视角和工作方法——例如产品经理、代码审查员或数据分析师。应用专家模板会调整专家处理任务时的默认思路和输出格式。
 
-```bash
-octop agent expert set my-agent --expert code-reviewer
+```text
+专家 → 专家市场
 ```
 
+专家市场按电商、金融、内容创作、生活健康、营销、学术、法律、技术、教育、医疗健康、人力行政、影视媒体、设计等分类整理，可直接搜索，点击**从市场创建**即可基于模板生成一个新专家。
+
 <Frame>
-  ![Agent Market](/images/agent-market.png "Agent Market")
+  ![专家市场](/images/ui-expert-market.png "专家市场")
 </Frame>
+
+<Tip>
+  通过 CLI 实例化专家模板（`octop agent experts`、`octop agent from-expert`），请参阅 [专家命令](/zh/cli/agent-commands)。
+</Tip>
 
 ## 组合使用
 

@@ -6,7 +6,7 @@ description: "Octop 在 /api 暴露完整的 REST API 和 WebSocket 对话端点
 
 Octop 通过挂载在 `/api` 前缀下的 HTTP 和 WebSocket API 暴露全部功能。除健康检查、首次设置和认证相关路径外，所有端点都需要 JWT 访问令牌——通过 `POST /api/auth/login` 获取。除非端点发射服务器发送事件流（`text/event-stream`）或原始字节（音频、文件下载），否则响应均为 JSON。
 
-## 基地地址
+## 基础地址
 
 ```text
 http://127.0.0.1:8088/api
@@ -99,7 +99,7 @@ curl http://127.0.0.1:8088/api/health
   </Card>
 
   <Card title="渠道" icon="plug" href="/zh/api/channels">
-    将专家连接到飞书、钉钉、Discord、企业微信等。
+    将专家连接到飞书、企业微信、钉钉、Telegram 等。
   </Card>
 
   <Card title="提供商" icon="microchip" href="/zh/api/providers">

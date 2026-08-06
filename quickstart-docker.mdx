@@ -4,7 +4,7 @@ sidebarTitle: 'Docker Setup'
 description: 'Deploy Octop using Docker Compose or a standalone docker run command. Includes volume mounts, environment variables, and first-run setup.'
 ---
 
-Octop ships a pre-built Docker image that wraps the full platform — web dashboard, CLI, IM channels, and the agent runtime — in a single container. Docker Compose is the recommended approach for production and multi-user deployments because it handles volume mounts and environment configuration out of the box. All your data persists in a named volume (or a host bind mount), so upgrades never touch your conversations, agents, or credentials.
+Octop ships a pre-built Docker image that wraps the full platform — web UI, CLI, IM channels, and the agent runtime — in a single container. Docker Compose is the recommended approach for production and multi-user deployments because it handles volume mounts and environment configuration out of the box. All your data persists in a named volume (or a host bind mount), so upgrades never touch your conversations, agents, or credentials.
 
 <Steps>
 
@@ -39,10 +39,10 @@ Octop ships a pre-built Docker image that wraps the full platform — web dashbo
 
     # Run the container
     docker run -d \
+      --name octop \
       -p 8088:8088 \
       -v octop-data:/data/.octop \
       -e HOME=/data \
-      -e OCTOP_DEFAULT_PASSWORD=changeme \
       octop:latest
     ```
 
@@ -53,25 +53,20 @@ Octop ships a pre-built Docker image that wraps the full platform — web dashbo
     </Note>
   </Step>
 
-  <Step title="Open the dashboard and log in">
+  <Step title="Open the web UI and complete first-run setup">
     Once the container starts, open your browser and navigate to:
 
     ```
     http://localhost:8088
     ```
 
-    Log in with the first-run credentials:
+    On first launch the dashboard opens the **setup wizard**. Open `~/octop-login.txt` in the user home directory, copy the one-time setup password into the wizard, then choose your own admin username and password.
 
-    | Field | Default value |
-    |-------|--------------|
-    | Username | `admin` |
-    | Password | `octop` |
+    <Note>
+      The file is `~/octop-login.txt` in the user home directory, not under `~/.octop/`. After setup completes, the file is removed and you sign in with the username and password you created.
+    </Note>
 
-    <Warning>
-      The default password is publicly known. Change it immediately after your first login by going to **Settings → Security** in the dashboard. For unattended deployments, set a strong password via the `OCTOP_DEFAULT_PASSWORD` environment variable **before** the first container boot — credentials are written only once, when `~/.octop/octop.db` does not yet exist.
-    </Warning>
-
-    To verify the container is healthy before logging in, run:
+    To verify the container is healthy before opening the wizard, run:
 
     ```bash
     curl http://localhost:8088/api/health
@@ -79,25 +74,25 @@ Octop ships a pre-built Docker image that wraps the full platform — web dashbo
   </Step>
 
   <Step title="Configure a model provider">
-    Octop supports OpenAI-compatible APIs, DashScope (Qwen), Ollama, and other presets. Add your first provider directly from the dashboard:
+    Octop ships built-in presets for Tencent Cloud, OpenAI, Anthropic, DeepSeek, Ollama, and many more. Add your first provider directly from the web UI:
 
     ```text
-    Settings → Providers → Add Provider
+    Management → Models
     ```
 
-    Select a provider preset, enter your API key, and save. You can also pass common API keys as environment variables so they are available to the agent runtime immediately on first boot:
+    Pick a built-in preset, enter your API key, and enable it. You can also pass common API keys as environment variables so they are available to the agent runtime immediately on first boot:
 
     ```bash
     docker run -d \
+      --name octop \
       -p 8088:8088 \
       -v octop-data:/data/.octop \
       -e HOME=/data \
-      -e OCTOP_DEFAULT_PASSWORD=changeme \
       -e OPENAI_API_KEY=sk-... \
       octop:latest
     ```
 
-    Once the provider is configured, open the **Chat** section in the dashboard and start your first conversation.
+    Once the provider is configured, open the **Chat** section in the web UI and start your first conversation.
   </Step>
 
 </Steps>
@@ -109,16 +104,14 @@ Use these variables to configure Octop's Docker deployment. For Docker Compose, 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `OCTOP_PORT` | `8088` | HTTP listen port inside the container |
-| `OCTOP_DEFAULT_PASSWORD` | `octop` | First-run admin password — applied only when the database does not yet exist |
-| `OCTOP_ADMIN_USERNAME` | `admin` | First-run admin username — applied only when the database does not yet exist |
 | `OCTOP_DATA` | `~/.octop` | Host directory for the Compose bind mount (maps to `/data/.octop` in the container) |
 | `HOME` | `/data` | Must be `/data` so that `~/.octop` resolves to the mounted volume path |
 | `OPENAI_API_KEY` | — | OpenAI-compatible API key, made available to the agent runtime |
 | `DASHSCOPE_API_KEY` | — | Alibaba DashScope (Qwen) API key |
 
-<Warning>
-  `OCTOP_DEFAULT_PASSWORD` and `OCTOP_ADMIN_USERNAME` only take effect during the **first boot** of a fresh data volume, when `octop.db` does not exist. Changing these variables after the database is initialized has no effect. To change the admin password on an existing install, use the dashboard under **Settings → Security**.
-</Warning>
+<Note>
+  Admin username and password are created by you in the first-run setup wizard — they are not injected via environment variables. To change the password on an existing install, use the web UI under **Management → Users**.
+</Note>
 
 ## Useful operations
 

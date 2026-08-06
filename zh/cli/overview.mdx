@@ -1,46 +1,104 @@
 ---
-title: "Octop CLI 概览：所有命令与传输模式"
-sidebarTitle: "概览"
-description: "`octop` CLI 是您与 Octop 服务器交互的主要入口——启动服务器、管理专家、配置提供商、设置渠道和定时任务——均可以在本地或远程服务器上执行。"
+title: 'Octop CLI 概览：所有命令与传输模式'
+sidebarTitle: '概览'
+description: 'octop CLI 完整参考：全局选项、传输模式，以及管理 Octop 服务器的所有顶层命令。'
 ---
 
-`octop` CLI 是您与 Octop 服务器交互的主要入口——启动服务器、管理专家、配置提供商、设置渠道和定时任务——均可以在本地或远程服务器上执行。
+`octop` CLI 是与服务器二进制文件一同安装的单条命令。大多数命令可在**离线**模式下运行——直接读写 `~/.octop/`——因此您无需启动服务器即可管理专家、用户、渠道和定时任务。少数命令（例如 `chats repl`、`channel test` 和 `skills enable`）需要正在运行的 `octop run` 进程，或会自动启动嵌入式服务器实例。
 
 ## 全局选项
 
-| 选项 | 描述 |
-| --- | --- |
-| `--host` | 目标服务器地址（默认为本地） |
-| `--port` | 目标服务器端口 |
-| `--token` | 用于远程命令的认证令牌 |
-| `--json` | 以 JSON 格式输出，便于脚本处理 |
-| `--version` | 显示安装的 Octop 版本 |
+在任意子命令前传递以下标志，以控制输出格式和默认目标：
+
+| 选项 | 环境变量 | 作用 |
+|---|---|---|
+| `--user TEXT` | `OCTOP_USER` | 管理类子命令的默认 `--user`（代其他用户操作） |
+| `--agent TEXT` | `OCTOP_AGENT` | 子命令的默认 `--agent` |
+| `--json` | — | 为列表类命令输出机器可读的 JSON |
+| `-v, --version` | — | 打印已安装版本并退出 |
 
 ## 传输模式
 
-CLI 可以以两种方式与 Octop 服务器通信：
+每条 `octop` 命令会根据操作需求自动选择以下三种传输方式之一：
 
-- **本地** —— 直接读写 `~/.octop/octop.db`（仅适用于服务器未运行时）
-- **远程** —— 通过 HTTP API 与正在运行的服务器通信，需要认证令牌
-
-## 命令分类
-
-<CardGroup cols={2}>
-  <Card title="服务器命令" icon="server" href="/zh/cli/server-commands">
-    `init`、`run`、`service`、`update`
+<CardGroup cols={3}>
+  <Card title="离线（Offline）" icon="database">
+    直接读写 `~/.octop/`，无需运行中的服务器。用于 `init`、`backup`、`plugin`、`agent list`、`user *`、`admin overview/audit` 以及大多数 CRUD 命令。
   </Card>
-
-  <Card title="专家命令" icon="user-robot" href="/zh/cli/agent-commands">
-    `agent`、`chat`、`skill`、`provider`
+  <Card title="附加（Attach）" icon="plug">
+    通过 HTTP 连接到正在运行的 `octop run` 进程。需先执行 `octop user login`。用于 `chats send/repl`（非嵌入式时）、`channel test`、`models ollama-*`、`skills enable/disable` 和 `provider test`。
   </Card>
-
-  <Card title="渠道与定时任务" icon="comments" href="/zh/cli/channel-cron-commands">
-    `channel`、`cron`、`plugin`、管理命令
+  <Card title="嵌入式（Embedded）" icon="server">
+    为单条命令启动进程内临时服务器，执行完毕后退出。无需单独运行 `octop run`。用于 `octop acp`、`octop chats repl`、`octop chats send` 以及 `octop agent create/from-expert/start/stop/reload`。
   </Card>
 </CardGroup>
 
-查看安装的 Octop 版本：
+## 命令分类
 
-```bash
-octop --version
+<CardGroup cols={3}>
+  <Card title="服务器命令" icon="server" href="/zh/cli/server-commands">
+    `init`、`run`、`service`、`update`、`user login`、`clean`、`config`、`completion`、`version`
+  </Card>
+  <Card title="专家命令" icon="user-robot" href="/zh/cli/agent-commands">
+    `agent`、`chats`、`skills`、`models`、`provider`、`acp`
+  </Card>
+  <Card title="渠道与定时任务" icon="comments" href="/zh/cli/channel-cron-commands">
+    `channel`、`cron`、`plugin`、`user`、`admin`、`backup`
+  </Card>
+</CardGroup>
+
+## 命令参考
+
+<Tip>
+  在任意列表命令后加上 `--json`，即可获得机器可读的 JSON 输出——适合脚本和 CI 流水线。
+</Tip>
+
+| 命令 | 描述 |
+|---|---|
+| `octop init` | 引导 `~/.octop/`（数据库、管理员账户、JWT 密钥） |
+| `octop run` | 在前台启动服务器 |
+| `octop service` | 管理系统服务（Linux 上为 systemd，macOS 上为 launchd） |
+| `octop agent` | 创建、列出、启动、停止和重载专家 |
+| `octop chats` | 聊天 REPL 与会话管理 |
+| `octop chat` | `octop chats` 的已弃用别名——新脚本请使用 `octop chats` |
+| `octop channel` | IM 渠道配置与管理 |
+| `octop cron` | 定时任务管理 |
+| `octop provider` | LLM 提供商管理 |
+| `octop models` | 模型目录与活动模型设置 |
+| `octop skills` | 启用或禁用按专家划分的技能 |
+| `octop acp` | 将专家暴露为 ACP 服务器（IDE 集成） |
+| `octop backup` | 导出与恢复备份 |
+| `octop user` | 用户管理 |
+| `octop admin` | 管理操作（审计日志、JWT 轮换） |
+| `octop plugin` | 安装与管理插件 |
+| `octop update` | 检查并安装更新 |
+| `octop clean` | 重置 CLI 状态或清空 `~/.octop/` |
+| `octop config` | 查看与编辑 CLI 状态（基础 URL、默认值） |
+| `octop completion` | Shell 补全工具 |
+| `octop version` | 打印已安装的 octop 版本 |
+
+## CLI 状态文件
+
+文件 `~/.octop/cli_state.json` 存储您的 CLI 会话状态：
+
+```json
+{
+  "base_url": "http://127.0.0.1:8088",
+  "token": null,
+  "default_user": null,
+  "default_agent": null
+}
 ```
+
+| 字段 | 描述 |
+|---|---|
+| `base_url` | Attach 模式命令使用的服务器 URL |
+| `token` | `octop user login` 后存储的 JWT |
+| `default_user` | 固定的 `--user` 值（通过 `octop config set-user` 设置） |
+| `default_agent` | 固定的 `--agent` 值（通过 `octop agent use` 设置） |
+
+删除此文件即可在不联系服务器的情况下退出 CLI 登录。Web 控制台和 HTTP API 客户端各自管理令牌，不会共享此文件。
+
+<Note>
+  在运行任意 `octop` 命令前设置 `OCTOP_HOME` 环境变量，可覆盖 `~/.octop/` 的位置。
+</Note>

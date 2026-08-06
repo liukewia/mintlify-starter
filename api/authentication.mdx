@@ -7,7 +7,7 @@ description: 'Get a JWT access token via POST /api/auth/login, then include it a
 Every Octop API call — except `/api/health`, `/api/setup/*`, and the OpenAPI schema — requires a JWT access token. Obtain the token by logging in with your credentials, then include it in the `Authorization` header of every subsequent request. Tokens expire after 24 hours by default; re-login to get a fresh one.
 
 <Warning>
-  The default credentials are `admin` / `octop`. Change the admin password immediately after completing the setup wizard — anyone with network access to your Octop instance can otherwise authenticate as admin.
+  On a fresh install, run `octop init`, then complete the setup wizard: open `~/octop-login.txt` in the user home directory for the one-time password, then create your own admin username and password. There is no fixed default login pair such as `admin` / `octop`. Use the credentials you set during setup for API login.
 </Warning>
 
 ## Log in and get a token
@@ -20,7 +20,7 @@ Every Octop API call — except `/api/health`, `/api/setup/*`, and the OpenAPI s
       ```bash cURL
       curl -X POST http://127.0.0.1:8088/api/auth/login \
         -H 'Content-Type: application/json' \
-        -d '{"username": "admin", "password": "octop"}'
+        -d '{"username": "<your_username>", "password": "<your_password>"}'
       ```
 
       ```python Python
@@ -28,7 +28,7 @@ Every Octop API call — except `/api/health`, `/api/setup/*`, and the OpenAPI s
 
       resp = requests.post(
           "http://127.0.0.1:8088/api/auth/login",
-          json={"username": "admin", "password": "octop"},
+          json={"username": "<your_username>", "password": "<your_password>"},
       )
       token = resp.json()["access_token"]
       ```
@@ -74,11 +74,11 @@ Every Octop API call — except `/api/health`, `/api/setup/*`, and the OpenAPI s
 ### Login request fields
 
 <ParamField body="username" type="string" required>
-  The account username. The default admin username is `admin`.
+  The account username you created during the setup wizard (or later via user management).
 </ParamField>
 
 <ParamField body="password" type="string" required>
-  The account password. The default admin password is `octop`.
+  The account password you set during the setup wizard (or later via password reset).
 </ParamField>
 
 ### Login response fields
@@ -102,7 +102,7 @@ Every Octop API call — except `/api/health`, `/api/setup/*`, and the OpenAPI s
       The account's login username.
     </ResponseField>
     <ResponseField name="user.display_name" type="string">
-      The human-readable display name shown in the dashboard.
+      The human-readable display name shown in the web UI.
     </ResponseField>
   </Expandable>
 </ResponseField>

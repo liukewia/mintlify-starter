@@ -6,43 +6,28 @@ description: "导出包含 SQLite 数据库、专家工作区和配置文件的�
 
 导出一份包含 SQLite 数据库、专家工作区和配置文件的完整 Octop 备份，并在任何运行 Octop 的机器上完整恢复。
 
-## 创建备份
+## 备份包含什么
 
-```bash
-octop backup create --output ./octop-backup.tar.gz
-```
-
-该命令会打包：
+备份归档会打包：
 
 - `~/.octop/octop.db` —— 主数据库
 - `~/.octop/secrets/` —— JWT 密钥和其他敏感文件
 - `~/.octop/agents/` —— 每个专家的工作区
 - `~/.octop/config.json` —— 服务器配置
 
-## 定期自动备份
+## 创建与恢复
 
-将备份与定时任务结合，实现定期自动备份：
+使用 CLI 创建和恢复备份：
 
-```bash
-octop cron add --schedule "0 2 * * *" --command "octop backup create --output /backups/octop-$(date +%F).tar.gz"
-```
+- `octop backup create` — 创建备份归档
+- `octop backup restore <archive>` — 将归档恢复到 `~/.octop`
 
-## 恢复备份
-
-在新机器或同一机器上恢复备份：
-
-```bash
-octop backup restore --input ./octop-backup.tar.gz
-```
+完整选项与示例见 [渠道与定时任务：备份](/zh/cli/channel-cron-commands#octop-backup)。
 
 <Warning>
   恢复操作会覆盖目标机器上现有的 `~/.octop` 目录。在恢复前请确保已备份任何需要保留的本地数据。
 </Warning>
 
 <Note>
-  恢复完成后，重新启动 Octop 服务器以加载恢复的数据：
-
-  ```bash
-  octop service restart
-  ```
+  恢复完成后，重新启动 Octop 服务器以加载恢复的数据：`octop service restart`。详见 [服务器命令](/zh/cli/server-commands)。
 </Note>

@@ -1,12 +1,12 @@
 ---
-title: "渠道 API：在 Octop 中将专家连接到 IM 平台"
-sidebarTitle: "渠道"
-description: "使用 Octop 的 /api/agents/{agent_id}/channels 端点，将专家连接到 Discord、飞书、钉钉、企业微信等 IM 平台。"
+title: "通道 API：在 Octop 中将专家连接到消息平台"
+sidebarTitle: "通道"
+description: "使用 Octop 的 /api/agents/{agent_id}/channels 端点，将专家连接到飞书、企业微信、钉钉、Telegram 等消息平台。"
 ---
 
 将专家连接到即时通信平台，以便它们可以发送和接收消息。
 
-## 基地路径
+## 路由
 
 ```text
 /api/agents/{agent_id}/channels
@@ -23,20 +23,7 @@ description: "使用 Octop 的 /api/agents/{agent_id}/channels 端点，将专�
 | DELETE | `/agents/{aid}/channels/{cid}` | 删除渠道 |
 | POST | `/agents/{aid}/channels/{cid}/test` | 测试渠道连接 |
 
-## 创建渠道
-
-### Discord
-
-```bash
-curl -X POST http://127.0.0.1:8088/api/agents/1/channels \
-  -H 'Authorization: Bearer <token>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "kind": "discord",
-    "name": "主 Discord 机器人",
-    "config": {"token": "your-discord-bot-token"}
-  }'
-```
+## 创建通道
 
 ### 飞书
 
@@ -51,10 +38,37 @@ curl -X POST http://127.0.0.1:8088/api/agents/1/channels \
   }'
 ```
 
+### Telegram
+
+```bash
+curl -X POST http://127.0.0.1:8088/api/agents/1/channels \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "kind": "telegram",
+    "name": "Telegram 机器人",
+    "config": {"token": "your-bot-token"}
+  }'
+```
+
 两种情况成功后都返回 `201 Created`。
 
+### 支持的类型
+
+| `kind` | 平台 |
+| --- | --- |
+| `weixin` | 微信 |
+| `qq` | QQ |
+| `wecom` | 企业微信 |
+| `feishu` | 飞书 |
+| `yuanbao` | 腾讯元宝 |
+| `dingtalk` | 钉钉 |
+| `telegram` | Telegram |
+| `xiaoyi` | 华为小艺 |
+| `mqtt` | MQTT |
+
 <Warning>
-  若 `kind` 不是支持的值，请求将以 `400 CHANNEL_KIND_UNSUPPORTED` 失败。支持的类型为 `discord`、`feishu`、`dingtalk`、`wecom`、`weixin` 和 `yuanbao`。
+  若 `kind` 不是支持的值，请求将以 `400 CHANNEL_KIND_UNSUPPORTED` 失败。
 </Warning>
 
 ## 测试渠道
@@ -75,7 +89,7 @@ curl -X POST http://127.0.0.1:8088/api/agents/1/channels/5/test \
 或失败时：
 
 ```json
-{"ok": false, "error": "无法连接到 Discord 门户"}
+{"ok": false, "error": "无法连接到 Telegram Bot API"}
 ```
 
 ## 更新渠道
@@ -106,7 +120,7 @@ curl -X DELETE http://127.0.0.1:8088/api/agents/1/channels/5 \
 curl -X POST http://127.0.0.1:8088/api/agents/1/channels/probe \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
-  -d '{"kind": "discord", "config": {"token": "your-discord-bot-token"}}'
+  -d '{"kind": "telegram", "config": {"token": "your-bot-token"}}'
 ```
 
 响应：
@@ -118,5 +132,5 @@ curl -X POST http://127.0.0.1:8088/api/agents/1/channels/probe \
 或失败时：
 
 ```json
-{"ok": false, "reason": "invalid_token", "detail": "Discord 拒绝了提交的令牌"}
+{"ok": false, "reason": "invalid_token", "detail": "Telegram 拒绝了提交的令牌"}
 ```

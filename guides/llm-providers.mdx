@@ -1,126 +1,57 @@
 ---
 title: "How to Configure LLM Providers and Models in Octop"
 sidebarTitle: "LLM Providers"
-description: "Add OpenAI, Ollama, DashScope, or any OpenAI-compatible API as an Octop provider. Set the active model per agent or globally with ease."
+description: "Add Tencent Cloud, OpenAI, Anthropic, DeepSeek, Ollama, or any custom endpoint as an Octop provider, and let auto-routing pick the best model per message."
 ---
 
-Octop supports a wide range of LLM backends out of the box — including OpenAI-compatible APIs, DashScope (Alibaba Cloud Qwen models), Ollama for local self-hosted inference, and any custom OpenAI-compatible endpoint. You can configure providers at the agent level for fine-grained control, or set a global default that all agents fall back to. Admins manage providers through either the web dashboard or the CLI.
+Octop ships built-in presets for a wide range of LLM backends and lets you add any custom endpoint. Providers are managed by admins under **Management → Models**; the models they expose then feed a shared pool that every agent can draw from.
 
-## Supported providers
+## Add a provider
 
-<CardGroup cols={2}>
-  <Card title="OpenAI" icon="bolt">
-    Use the official OpenAI API or any drop-in compatible service. Provide a base URL and API key.
-  </Card>
-  <Card title="DashScope (Qwen)" icon="cloud">
-    Alibaba Cloud's DashScope service hosts the Qwen family of models. Configure with your DashScope API key.
-  </Card>
-  <Card title="Ollama" icon="server">
-    Run models locally with Ollama. Octop connects to your running Ollama instance over HTTP — no external API key required.
-  </Card>
-  <Card title="Custom OpenAI-compatible" icon="plug">
-    Any API that follows the OpenAI chat completions spec works. Point Octop at your custom base URL and supply the appropriate key.
-  </Card>
-</CardGroup>
-
-## Add a provider via the dashboard
-
-<Steps>
-  <Step title="Open Provider Settings">
-    Navigate to **Settings → Providers** in the Octop dashboard.
-  </Step>
-  <Step title="Click Add Provider">
-    Select **Add Provider** to open the provider creation form.
-  </Step>
-  <Step title="Choose a preset or enter a custom base URL">
-    Pick a built-in preset (OpenAI, DashScope, Ollama, etc.) from the dropdown, or select **Custom** and enter the full base URL for your OpenAI-compatible API endpoint.
-  </Step>
-  <Step title="Enter your API key">
-    Type your API key into the **API Key** field. For Ollama, leave this field blank — no key is required.
-  </Step>
-  <Step title="Test the connection">
-    Click **Test** to verify that Octop can reach the provider and authenticate successfully. A green status indicator confirms the connection.
-  </Step>
-  <Step title="Save the provider">
-    Click **Save**. The provider is now available to assign to agents or set as the global default.
-  </Step>
-</Steps>
-
-## Add a provider via the CLI
-
-Use the `octop models` command group for a fast, terminal-based setup.
-
-<CodeGroup>
-  ```bash Interactive wizard
-  # Launch the interactive wizard to create a provider and set the active model
-  octop models config
-  ```
-
-  ```bash List providers
-  # Show all configured providers
-  octop provider list
-  ```
-
-  ```bash Create manually
-  # Create a provider without the wizard (follow the prompts)
-  octop provider create
-  ```
-</CodeGroup>
-
-## Set the active model
-
-The **active model** is the global default used whenever an agent doesn't have a provider explicitly assigned.
-
-```bash
-# View or set the global active model
-octop models active
+```text
+Management → Models
 ```
 
-Running `octop models active` without arguments prints the current global default. Pass a model identifier to update it.
+<Frame>
+  ![Model management](/images/ui-models.png "Model management")
+</Frame>
+
+Pick a built-in preset from **Cloud** or **Local**, enter your API key, and enable it. The provider's models immediately become available to agents under your account.
+
+## Built-in provider presets
+
+The **Cloud** tab covers hosted services:
+
+| Preset | Protocol |
+|---|---|
+| Tencent Cloud, Kimi, MiniMax, OpenCode, SiliconFlow, Aliyun, Volcano Engine, Zhipu | `openai`, multi-site |
+| OpenAI, OpenAI (ChatGPT), OpenRouter, DeepSeek, Google Gemini, Groq, ModelScope, Xiaomi MiMo | `openai` |
+| Anthropic | `anthropic` |
+
+The **Local** tab ships an **Ollama (Local)** preset pointing at `http://localhost:11434/v1`. If you need something else entirely, use **Custom provider** to supply your own base URL and key.
+
+<Note>
+  Presets are labelled by the API protocol they speak — `openai` for the OpenAI chat completions spec and `anthropic` for the Anthropic Messages API. Any endpoint that follows one of those specs works as a custom provider.
+</Note>
+
+## The available model pool and auto-routing
+
+Every model from an enabled provider joins the **available model pool** at the top of the page. Octop can route each message automatically, choosing the model that best fits that message. Models you mark with a star are preferred when nothing about the request calls for something else.
+
+Each model in the pool shows its modality and context window, so you can see at a glance which ones handle long inputs.
+
+## Set a model for an agent
+
+Agents fall back to the global default unless you assign a model to them specifically. Override it per agent when you want, for example, a cheaper model for everyday chat and a stronger one for complex work.
+
+<Tip>
+  To configure providers and models from the terminal, use `octop models config`, `octop models list`, and `octop models active` — see [Agent commands](/cli/agent-commands#octop-models).
+</Tip>
 
 ## Use Ollama for local models
 
-Ollama lets you run open-source models entirely on your own machine. Octop connects to Ollama over a local HTTP port — no API key or internet access needed.
-
-<Steps>
-  <Step title="Start Ollama">
-    Run Ollama as a separate process on the same machine before starting Octop:
-
-    ```bash
-    ollama serve
-    ```
-  </Step>
-  <Step title="Add Ollama as a provider">
-    In the dashboard or via CLI, add a new provider and set the base URL to:
-
-    ```
-    http://localhost:11434
-    ```
-
-    Leave the API key blank.
-  </Step>
-  <Step title="List your local models">
-    Confirm which models Ollama has available:
-
-    ```bash
-    octop models ollama-list
-    ```
-  </Step>
-  <Step title="Pull a model if needed">
-    Download a model from the Ollama library:
-
-    ```bash
-    octop models ollama-pull <model>
-    ```
-
-    Replace `<model>` with a model name such as `llama3`, `mistral`, or `qwen2`.
-  </Step>
-</Steps>
+Enable the **Ollama (Local)** preset under the **Local** tab. No API key is required; Octop talks to your Ollama instance at `http://localhost:11434/v1`.
 
 <Note>
-  Ollama must be running before you start Octop, or before you send the first message to an agent that uses an Ollama provider. Restart Ollama if the connection test fails.
+  Ollama must be running before you send the first message to an agent that uses it. Use `octop models ollama-list` and `octop models ollama-pull` to inspect and download local models.
 </Note>
-
-<Tip>
-  You can assign a different provider and model to each individual agent — for example, use a powerful cloud model for your research agent and a fast local Ollama model for your quick-reply agent. Go to **Agents → [your agent] → Settings → Provider** to override the global default for that specific agent. Agents without an explicit provider assignment automatically use the global active model.
-</Tip>

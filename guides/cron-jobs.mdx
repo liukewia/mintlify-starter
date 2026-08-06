@@ -6,6 +6,10 @@ description: 'Schedule your Octop agents to run prompts automatically. Use cron 
 
 Octop lets you schedule your agents to run prompts automatically on a cron schedule — useful for daily summaries, morning briefings, or recurring checks. A cron job fires without any manual input, so your agents can deliver results while you focus on other work.
 
+<Frame>
+  ![Cron jobs](/images/ui-tasks.png "Cron")
+</Frame>
+
 ## How cron jobs work
 
 Every cron job has three parts:
@@ -16,14 +20,12 @@ Every cron job has three parts:
 
 ## Create a cron job
 
-### Via the dashboard
-
 <Steps>
-  <Step title="Open the Cron section">
-    Go to **Dashboard → Cron**.
+  <Step title="Open the Tasks section">
+    Go to **Tasks** in the sidebar and select the agent the job belongs to.
   </Step>
   <Step title="Start a new job">
-    Click **New Job**.
+    Click **Create task**.
   </Step>
   <Step title="Set the trigger">
     Enter a cron expression (for example, `0 9 * * *` for 9 AM daily) or use an interval shorthand such as `interval:30` for every 30 minutes.
@@ -39,21 +41,7 @@ Every cron job has three parts:
   </Step>
 </Steps>
 
-### Via the CLI
-
-<CodeGroup>
-```bash Create a cron job
-octop cron create \
-  --agent main \
-  --trigger '0 9 * * *' \
-  --prompt 'Give me a morning briefing on current tech news' \
-  --task-type agent
-```
-</CodeGroup>
-
 ## Trigger formats
-
-Octop supports three trigger formats:
 
 | Format | Example | Description |
 |--------|---------|-------------|
@@ -61,25 +49,13 @@ Octop supports three trigger formats:
 | Interval | `interval:30` | Fires every 30 minutes from the moment the job is saved |
 | One-time | `date:2025-01-15T09:00:00` | ISO 8601 timestamp — fires once at the specified time |
 
-## Manage cron jobs with the CLI
+## Monitor and run jobs
 
-<CodeGroup>
-```bash List jobs for an agent
-octop cron list --agent <id>
-```
+The task list shows each job's schedule, type, prompt, last run time, and last status, so you can confirm a job is firing as expected. Each row carries **Enable** and **Run now** actions — **Run now** triggers the job immediately without waiting for its next scheduled time, which is the quickest way to verify a new job works.
 
-```bash Delete a job
-octop cron delete --agent <id> <job_id>
-```
-
-```bash Trigger a job immediately
-octop cron run-now --agent <id> <job_id>
-```
-</CodeGroup>
-
-<Note>
-  `octop cron run-now` requires a live Octop server (`octop run`) to be running — it dispatches the job through the running process. The `list` and `delete` commands work offline against the local database.
-</Note>
+<Tip>
+  For CLI create, list, delete, and `run-now`, see [Channel & cron commands](/cli/channel-cron-commands#octop-cron).
+</Tip>
 
 <Tip>
   Set the `OCTOP_DEFAULT_TIMEZONE` environment variable or add a `"default_timezone"` key to your `config.json` to control which timezone Octop uses when evaluating cron expressions. Without this, the server's system timezone is used.

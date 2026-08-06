@@ -1,25 +1,146 @@
 ---
 title: "使用 ACP 协议将您的 IDE 连接到 Octop 专家"
 sidebarTitle: "IDE 集成"
-description: "使用 ACP 让 Zed、OpenCode 或 a helpful coding assistant 与您的 Octop 专家对话，或让 Octop 将编码任务委托给外部 AI 编码工具。"
+description: "用 ACP 让 Zed 等 IDE 直接驱动 Octop 专家，或让 Octop 把编码任务委托给 OpenCode、CodeBuddy、Claude Code、Codex。"
 ---
 
-ACP（Agent Client Protocol）让 Octop 专家与支持该协议的 IDE 和编码工具互通。您可以在 Zed、OpenCode 或 a helpful coding assistant 中直接与您的 Octop 专家对话，也可以让 Octop 将编码任务委托给外部 AI 编码工具。
+Octop 支持双向的 ACP（Agent Client Protocol）：既可以把 Octop 暴露为 ACP 服务端，让 IDE 直接驱动您的专家；也可以让 Octop 把编码任务委托给外部编程工具。两个方向都走 stdio JSON-RPC，Octop 不提供 HTTP 形式的 ACP 端点。
 
-## 从 IDE 连接到 Octop
+<CardGroup cols={2}>
+  <Card title="入站 — IDE → Octop" icon="arrow-right-to-bracket">
+    IDE（Zed、OpenCode 等）把 Octop 专家当作编码大脑。运行 `octop acp` 并让 IDE 指向它。
+  </Card>
 
-在支持 ACP 的 IDE 中，将 Octop 添加为一个 ACP 代理：
+  <Card title="出站 — Octop → 编程工具" icon="arrow-right-from-bracket">
+    Octop 通过内置的 `acp_runner` 工具，把编码子任务委托给 OpenCode、CodeBuddy、Claude Code 或 Codex。
+  </Card>
+</CardGroup>
 
-```bash
-octop acp serve --agent my-agent
+## 入站：IDE 驱动 Octop
+
+<Steps>
+  <Step title="确认专家已配置模型">
+    打开**专家**页选中目标专家，确认已设置提供商和模型。`octop acp` 会独立启动该专家，必须能正常启动。
+  </Step>
+
+  <Step title="启动 ACP 服务">
+    在终端运行以下命令。该命令独立运行，**不需要** `octop run` 同时在跑：
+
+    ```bash
+    octop acp --agent main
+    ```
+  </Step>
+
+  <Step title="配置 IDE">
+    在 IDE 中把 `octop acp` 命令配置为 ACP 服务端，参考下面的 Zed 示例。
+  </Step>
+</Steps>
+
+### Zed 配置
+
+<CodeGroup>
+```json ~/.config/zed/settings.json
+{
+  "agent_servers": {
+    "Octop": {
+      "command": "octop",
+      "args": ["acp", "--agent", "main"],
+      "env": {}
+    }
+  }
+}
 ```
 
-该命令会启动一个本地 ACP 服务，您的 IDE 可以连接到它，就像连接到其他 AI 编码代理一样。您在 IDE 中发出的每一条消息都会由您的 Octop 专家处理，它可以读写文件、执行命令，并使用其已配置的技能和连接器。
+```json 开发环境（uv）
+{
+  "agent_servers": {
+    "Octop": {
+      "command": "uv",
+      "args": ["run", "octop", "acp", "--agent", "main"],
+      "env": {}
+    }
+  }
+}
+```
+</CodeGroup>
 
-## 从 Octop 委托编码任务
+配置完成后，在 Zed 中新建一个 agent 会话即可正常提问。每个会话对应一个 `thread_id`，专家的工作区仍在 `~/.octop/agents/<agent_id>/`。
 
-反过来，Octop 专家也可以将特定任务委托给外部 AI 编码工具处理，当这些工具具备更强的编码能力时。这让您可以在聊天界面中发布编码任务，并让它在底层由专业化的开发工具完成。
+## 出站：Octop 委托编程工具
 
-<Note>
-  ACP 是一个开放协议，旨在标准化 AI 代理与开发环境之间的通信。任何支持 ACP 的工具都可以与 Octop 专家互通。
-</Note>
+<Steps>
+  <Step title="安装外部 CLI 工具">
+    在运行 `octop run` 的同一台机器上安装您要用的 Runner：
+
+    ```bash
+    # OpenCode
+    npm install -g opencode
+
+    # Claude Code（通过 npx，无需安装）
+    npx -y @zed-industries/claude-agent-acp
+
+    # Codex（通过 npx，无需安装）
+    npx -y @zed-industries/codex-acp
+    ```
+  </Step>
+
+  <Step title="打开 ACP 页面">
+    在页面侧边栏进入 **ACP**（`/acp`）。
+  </Step>
+
+  <Step title="启用需要的 Runner">
+    打开 OpenCode、CodeBuddy、Claude Code、Codex 或您自行添加的 Runner 卡片开关。Runner 配置对该账号下所有专家共享。
+
+    <Frame>
+      ![ACP Runner](/images/ui-acp.png "ACP Runner")
+    </Frame>
+  </Step>
+
+  <Step title="为专家启用 acp_runner 工具">
+    在顶部切换到目标专家，然后打开同一页面底部的**启用 ACP Runner 工具**。与 Runner 配置不同，这个开关按专家单独生效。
+  </Step>
+
+  <Step title="在对话中委托任务">
+    在聊天中让专家使用 `acp_runner`，例如「用 acp_runner 调 opencode 找到 README 并总结一下」。专家会自行管理会话生命周期，权限确认会内联显示在对话中。
+  </Step>
+</Steps>
+
+### 内置 Runner
+
+| Runner ID | 命令 | 参数 |
+| --- | --- | --- |
+| `opencode` | `opencode` | `acp` |
+| `codebuddy` | `codebuddy` | `--acp` |
+| `claude_code` | `npx` | `-y`、`@zed-industries/claude-agent-acp` |
+| `codex` | `npx` | `-y`、`@zed-industries/codex-acp` |
+
+内置 Runner 无法删除。点击 ACP 页面的**添加 Runner** 可以添加自定义 Runner。
+
+### `acp_runner` 工具的动作
+
+| 动作 | 说明 |
+| --- | --- |
+| `action=list` | 列出已启用的 Runner 和当前会话状态 |
+| `action=start` | 新建会话：指定 `runner` + `message`（可选 `cwd`） |
+| `action=message` | 在已有会话中继续追加消息 |
+| `action=respond` | 用确切的选项 id 回应 `[permission_required]` 提示 |
+| `action=status` | 查询会话是打开还是在等待权限确认 |
+| `action=close` | 结束会话 |
+
+<Tip>
+  如果 `octop run` 启动环境的 `PATH` 中找不到 Runner 可执行文件（以系统服务方式运行时很常见），请在 Runner 的**命令**字段填写绝对路径，例如用 `/usr/local/bin/opencode` 代替 `opencode`。
+</Tip>
+
+## 排查
+
+<Accordion title="octop acp 立即退出">
+  专家未运行，或 `--agent` 的值不正确。打开页面确认专家存在并已启动，再运行 `octop acp`。
+</Accordion>
+
+<Accordion title="启动 Runner 报 “Unknown runner”">
+  ACP 服务的缓存是进程级的。添加自定义 Runner 后，需要重启 `octop run` 才会生效。
+</Accordion>
+
+<Accordion title="外部 Runner 没有返回任何文本">
+  该 CLI 工具可能存在鉴权或配额问题。检查它自身的登录状态，例如运行 `codebuddy auth status`，或确认相关服务的 API 密钥有效。
+</Accordion>

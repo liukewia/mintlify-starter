@@ -1,10 +1,10 @@
 ---
 title: "How Octop Works: Architecture Overview"
 sidebarTitle: "Overview"
-description: "Understand Octop's single-process model: one server runs the web dashboard, CLI, IM channels, and cron jobs sharing one database."
+description: "Understand Octop's single-process model: one server runs the web UI, CLI, IM channels, and cron jobs sharing one database."
 ---
 
-Octop runs as a **single process**. Every surface — the web dashboard, the CLI, IM channel bridges, and cron automation — shares one SQLite database stored under `~/.octop/`. When you restart Octop, the entire runtime state is rebuilt from `~/.octop/octop.db`, so there are no external queues, brokers, or microservices to manage.
+Octop runs as a **single process**. Every surface — the web UI, the CLI, IM channel bridges, and cron automation — shares one SQLite database stored under `~/.octop/`. When you restart Octop, the entire runtime state is rebuilt from `~/.octop/octop.db`, so there are no external queues, brokers, or microservices to manage.
 
 ## How the surfaces connect
 
@@ -15,7 +15,7 @@ All incoming messages, regardless of their origin, flow through a single unified
 │                    Octop (single process)            │
 │                                                     │
 │   ┌──────────────┐  ┌──────────────┐               │
-│   │ Web Dashboard│  │  CLI / HTTP  │               │
+│   │   Web UI     │  │  CLI / HTTP  │               │
 │   └──────┬───────┘  └──────┬───────┘               │
 │          │                 │                        │
 │   ┌──────┴─────────────────┴───────┐               │
@@ -43,9 +43,9 @@ All incoming messages, regardless of their origin, flow through a single unified
 
 | Surface | What it does |
 |---|---|
-| **Web Dashboard** | Browser UI for chat, agent management, connectors, channels, cron, and settings |
-| **CLI** | Terminal commands (`octop chat`, `octop agent`, `octop cron`, etc.) and ACP integration |
-| **IM Channels** | Bridges to Feishu, DingTalk, QQ, Discord, WeCom, and other platforms |
+| **Web UI** | Browser pages for chat, agent management, connectors, channels, cron, and settings |
+| **CLI** | Terminal commands (`octop chats`, `octop agent`, `octop cron`, etc.) and ACP integration |
+| **IM Channels** | Bridges to Feishu, WeCom, DingTalk, QQ, WeChat, Telegram, and other platforms |
 | **Cron** | Scheduled tasks that send recurring prompts directly to your agents |
 
 ## Key concepts
@@ -58,7 +58,7 @@ All incoming messages, regardless of their origin, flow through a single unified
     Bundled expert templates you can instantiate as agents, plus 16 MBTI personality profiles that shape how an agent communicates.
   </Card>
   <Card title="Channels" icon="comments" href="/concepts/channels">
-    IM platform connections that route messages from Feishu, DingTalk, QQ, Discord, WeCom, and more to a specific agent.
+    Messaging platform connections that route messages from Feishu, WeCom, DingTalk, QQ, WeChat, Telegram, and more to a specific agent.
   </Card>
   <Card title="Connectors" icon="plug" href="/concepts/connectors">
     OAuth-authenticated apps and MCP gateways that give agents access to external services and tools.
@@ -88,7 +88,7 @@ Here is a brief description of each concept:
 </Accordion>
 
 <Accordion title="Cron">
-  **Cron** jobs let you schedule recurring prompts that are sent to an agent automatically. You can write them in natural language or as slash commands, and manage them from the dashboard or via `octop cron`.
+  **Cron** jobs let you schedule recurring prompts that are sent to an agent automatically. You can write them in natural language or as slash commands, and manage them from the web UI or via the [CLI](/cli/channel-cron-commands#octop-cron).
 </Accordion>
 
 ## Data directory layout

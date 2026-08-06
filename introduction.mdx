@@ -4,7 +4,11 @@ sidebarTitle: "Introduction"
 description: "Octop is a self-hosted, multi-user AI assistant platform. Run personal AI agents, connect IM channels, and keep all your data on your own machine."
 ---
 
-Octop is an open-source AI assistant you host yourself. It gives you a web dashboard, a CLI, and IM integrations (Feishu, DingTalk, QQ, Discord, WeCom) — all running in a single process, with every conversation and credential stored on your own machine under `~/.octop/`.
+Octop is an open-source AI assistant you host yourself. It gives you a web UI, a CLI, and messaging integrations (Feishu, WeCom, DingTalk, QQ, WeChat, Telegram, and more) — all running in a single process, with every conversation and credential stored on your own machine under `~/.octop/`.
+
+<Frame>
+  ![Octop chat](/images/ui-chat.png "Chat")
+</Frame>
 
 <CardGroup cols={2}>
   <Card title="Quick Start" icon="rocket" href="/quickstart">
@@ -24,10 +28,10 @@ Octop is an open-source AI assistant you host yourself. It gives you a web dashb
 ## What you can do with Octop
 
 - **Chat with specialized agents** — create multiple agents per user, each with its own LLM provider, skill set, and MBTI persona
-- **Connect your messaging apps** — route conversations from Feishu, DingTalk, QQ, Discord, or WeCom into your agents
+- **Connect your messaging apps** — route conversations from Feishu, WeCom, DingTalk, QQ, WeChat, Telegram, and more into your agents
 - **Schedule automated tasks** — set cron jobs that prompt your agents on a schedule
-- **Integrate with your IDE** — use ACP to let Zed, OpenCode, or Claude Code talk to your Octop agents
-- **Automate the web** — headless browser sessions and remote desktop support built in
+- **Delegate to coding agents** — use ACP to connect OpenCode, CodeBuddy, Claude Code, or Codex
+- **Automate the web** — a built-in browser workbench, terminal, and remote desktop
 - **Stay private** — no cloud dependency; all data lives on your machine
 
 ## How Octop is organized
@@ -36,11 +40,11 @@ Octop is an open-source AI assistant you host yourself. It gives you a web dashb
   <Card title="Agents & Personas" icon="user-robot" href="/concepts/agents">
     Each agent has its own workspace, providers, and personality
   </Card>
-  <Card title="IM Channels" icon="comments" href="/concepts/channels">
-    Connect Feishu, DingTalk, Discord, and more
+  <Card title="Channels" icon="comments" href="/concepts/channels">
+    Connect Feishu, WeCom, DingTalk, Telegram, and more
   </Card>
   <Card title="Connectors" icon="plug" href="/concepts/connectors">
-    OAuth apps and MCP gateways extend agent capabilities
+    Built-in app connectors and custom MCP servers
   </Card>
   <Card title="CLI Reference" icon="terminal" href="/cli/overview">
     Full command reference for power users

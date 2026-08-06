@@ -37,7 +37,7 @@ octop init --admin-username admin --admin-password mypassword --yes
 
 ## `octop run`
 
-Start the Octop server in the foreground using uvicorn. This serves the web dashboard, HTTP/SSE API, and IM channel listeners on a single process.
+Start the Octop server in the foreground using uvicorn. This serves the web UI, HTTP/SSE API, and IM channel listeners on a single process.
 
 <CodeGroup>
 ```bash Default
@@ -134,3 +134,86 @@ After a successful login, the JWT is written to `~/.octop/cli_state.json`. Delet
 <Tip>
   All other `octop user` subcommands (`create`, `list`, `passwd`, `role`, `disable`, `delete`) operate directly against the local SQLite database and do not require a running server or a prior login.
 </Tip>
+
+---
+
+## `octop clean`
+
+Reset CLI state or wipe the entire `~/.octop/` tree. **Destructive** — read the help carefully before running.
+
+<CodeGroup>
+```bash Clear CLI state only (keep data)
+octop clean --state
+```
+```bash Wipe the entire ~/.octop/ directory
+octop clean --all
+```
+```bash Skip the confirmation prompt
+octop clean --all --yes
+```
+</CodeGroup>
+
+### Options
+
+| Option | Description |
+|---|---|
+| `--state / --all` | What to remove: `--state` clears CLI state only; `--all` wipes the entire `~/.octop/` tree |
+| `--yes` | Skip the confirmation prompt |
+
+<Warning>
+  `octop clean --all` deletes the database, workspaces, and all configuration. Run `octop backup create` before using this command.
+</Warning>
+
+---
+
+## `octop config`
+
+Inspect or edit `~/.octop/cli_state.json` (default base URL, user, agent).
+
+<CodeGroup>
+```bash Show current CLI state
+octop config show
+```
+```bash Pin the default --user
+octop config set-user admin
+```
+</CodeGroup>
+
+### Subcommands
+
+| Subcommand | Description |
+|---|---|
+| `show` | Print the current CLI state |
+| `set-user` | Pin the default `--user` |
+
+---
+
+## `octop completion`
+
+Generate and install shell command completion.
+
+<CodeGroup>
+```bash Dump a bash completion snippet
+octop completion show bash
+```
+```bash Dump a zsh completion snippet
+octop completion show zsh
+```
+```bash Append to ~/.zshrc or ~/.bashrc
+octop completion install
+```
+</CodeGroup>
+
+<Tip>
+  After running `octop completion install`, reopen your terminal or run `source ~/.zshrc` (or `source ~/.bashrc`) to enable completion.
+</Tip>
+
+---
+
+## `octop version`
+
+Print the installed octop version. Equivalent to the global `-v, --version` flag.
+
+```bash
+octop version
+```

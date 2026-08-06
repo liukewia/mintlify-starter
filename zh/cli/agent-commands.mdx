@@ -1,52 +1,228 @@
 ---
-title: "Octop CLI：专家、聊天、技能与模型命令"
-sidebarTitle: "专家命令"
-description: "创建和管理专家，启动交互式聊天会话，启用或禁用技能，并从 octop CLI 配置 LLM 提供商。"
+title: 'Octop CLI：专家、聊天、技能与模型命令'
+sidebarTitle: '专家命令'
+description: '创建和管理专家，启动交互式聊天会话，启用或禁用技能，并从 octop CLI 配置 LLM 提供商。'
 ---
 
-创建和管理专家，启动交互式聊天会话，启用或禁用技能，并从 `octop` CLI 配置 LLM 提供商。
+CLI 让您完全控制专家与会话。您可以从零创建专家，或从内置专家模板创建；在终端直接启动交互式聊天；配置技能、管理 LLM 提供商并选择活动模型——无需打开 Web 控制台。
 
 ## `octop agent`
 
-```bash
-octop agent create --name my-agent
+创建、查看和控制专家生命周期。大多数子命令无需 `octop run` 正在运行。
+
+<CodeGroup>
+```bash 创建基础专家
+octop agent create --name myagent
+```
+```bash 创建带 MBTI 人格的专家
+octop agent create --name analyst --persona-mbti INTJ
+```
+```bash 从内置专家模板创建
+octop agent from-expert <expert_id>
+```
+```bash 列出所有专家
 octop agent list
-octop agent delete <agent-name>
-octop agent model set <agent-name> --provider openai --model gpt-4o
-octop agent persona set <agent-name> --persona INTJ
-octop agent expert set <agent-name> --expert code-reviewer
 ```
-
-## `octop chat`
-
-与专家开始交互式终端聊天会话。
-
-```bash
-octop chat [--agent my-agent]
+```bash 启动、停止、重载或删除专家
+octop agent start --agent myagent
+octop agent stop --agent myagent
+octop agent reload --agent myagent
+octop agent delete --agent myagent
 ```
-
-若未指定 `--agent`，则使用默认的 `main` 专家。
-
-## `octop agent skill`
-
-启用或禁用专家的技能。
-
-```bash
-octop agent skill enable <agent-name> --skill browser
-octop agent skill disable <agent-name> --skill terminal
-octop agent skill list <agent-name>
+```bash 列出内置专家模板
+octop agent experts
 ```
+</CodeGroup>
+
+### 子命令
+
+| 子命令 | 描述 |
+|---|---|
+| `create` | 创建新专家（管理员可用 `--user` 代其他用户创建） |
+| `from-expert` | 从内置专家模板创建专家 |
+| `list` | 列出当前用户的所有专家 |
+| `use <id>` | 将此专家固定为后续命令的默认值 |
+| `start` | 启动专家运行时 |
+| `stop` | 停止专家运行时 |
+| `reload` | 重载专家运行时（不删除会话历史） |
+| `delete` | 删除专家记录及其运行时 |
+| `experts` | 列出本安装上所有可用的内置专家模板 |
+
+运行 `octop agent use <id>` 会将专家 ID 写入 `~/.octop/cli_state.json`。之后接受 `--agent` 的命令都会默认使用该值，无需重复指定。
+
+---
+
+## `octop chats`
+
+管理会话线程并发送消息。`repl` 和 `send` 子命令会自动启动临时服务器进程——无需单独运行 `octop run`。
+
+<CodeGroup>
+```bash 启动交互式聊天 REPL
+octop chats repl
+```
+```bash 发送单条消息并流式输出回复
+octop chats send --agent main 'Hello'
+```
+```bash 列出专家的会话线程
+octop chats list --agent main
+```
+```bash 查看线程的消息历史
+octop chats get --agent main <thread_id>
+```
+```bash 创建新线程
+octop chats create --agent main
+```
+```bash 重命名或置顶线程
+octop chats update --agent main <thread_id>
+```
+```bash 删除线程
+octop chats delete --agent main <thread_id>
+```
+</CodeGroup>
+
+### 子命令
+
+| 子命令 | 需要服务器 | 描述 |
+|---|---|---|
+| `list` | 否 | 列出专家的会话线程 |
+| `get` | 否 | 显示线程的消息历史 |
+| `create` | 否 | 创建新线程 |
+| `update` | 否 | 重命名或置顶线程 |
+| `delete` | 否 | 删除线程 |
+| `send` | 自动（嵌入式） | 发送一条消息并流式输出回复 |
+| `repl` | 自动（嵌入式） | 交互式聊天 REPL |
+
+<Note>
+  `octop chats repl` 和 `octop chats send` 会在命令执行期间启动进程内临时服务器。您无需先运行 `octop run`。`list`、`get`、`create`、`update` 和 `delete` 子命令可完全离线操作 `~/.octop/octop.db`。
+</Note>
+
+<Tip>
+  旧命令 `octop chat` 是 `octop chats` 的已弃用别名。仍可使用，但会打印警告——请将脚本更新为 `octop chats`。
+</Tip>
+
+---
+
+## `octop skills`
+
+启用或禁用按专家划分的技能。所有子命令在启动时会查询技能库，需要运行中的服务器。
+
+<CodeGroup>
+```bash 列出专家的技能
+octop skills list --agent main
+```
+```bash 启用技能
+octop skills enable --agent main <skill_name>
+```
+```bash 禁用技能
+octop skills disable --agent main <skill_name>
+```
+```bash 查看或编辑按专家划分的技能配置
+octop skills config --agent main
+```
+</CodeGroup>
+
+### 子命令
+
+| 子命令 | 描述 |
+|---|---|
+| `list` | 列出专家的技能 |
+| `enable` | 为专家启用技能 |
+| `disable` | 为专家禁用技能 |
+| `config` | 查看或编辑按专家划分的技能配置 |
+
+<Warning>
+  这些命令需要正在运行的 `octop run` 进程。它们通过实时服务器更新专家的技能配置。使用 `octop skills enable` 或 `octop skills disable` 前，请先通过 `octop run` 或 `octop service start` 启动服务器。
+</Warning>
+
+---
+
+## `octop models`
+
+管理模型目录、交互式配置提供商，以及拉取 Ollama 模型。
+
+<CodeGroup>
+```bash 交互式配置向导
+octop models config
+```
+```bash 列出所有已启用提供商的解析模型
+octop models list
+```
+```bash 查看或设置全局默认模型
+octop models active
+```
+```bash 列出内置提供商预设模板
+octop models presets
+```
+```bash 列出本地可用的 Ollama 模型
+octop models ollama-list
+```
+```bash 通过 Ollama 拉取模型
+octop models ollama-pull llama3.2
+```
+```bash 删除本地 Ollama 模型
+octop models ollama-rm llama3.2
+```
+</CodeGroup>
+
+### 子命令
+
+| 子命令 | 需要服务器 | 描述 |
+|---|---|---|
+| `config` | 否 | 交互式向导：创建提供商并设置活动模型 |
+| `list` | 否 | 列出所有已启用提供商的解析模型 |
+| `active` | 否 | 查看或设置全局默认模型（管理员） |
+| `presets` | 否 | 列出内置提供商模板 |
+| `ollama-list` | 是 | 列出本地 Ollama 实例中的模型 |
+| `ollama-pull` | 是 | 通过 Ollama 拉取模型 |
+| `ollama-rm` | 是 | 删除本地 Ollama 模型 |
+
+---
 
 ## `octop provider`
 
-管理 LLM 提供商。
+管理本地数据库中的 LLM 提供商记录。`test` 子命令需要运行中的服务器以发起实时 API 调用。
 
-```bash
-octop provider add --name openai --api-key sk-...
+<CodeGroup>
+```bash 列出提供商
 octop provider list
-octop provider remove <provider-name>
 ```
+```bash 交互式创建提供商
+octop provider create
+```
+```bash 测试与提供商的连通性
+octop provider test
+```
+```bash 删除提供商
+octop provider delete
+```
+</CodeGroup>
+
+<Note>
+  `octop provider list`、`create` 和 `delete` 离线操作 `~/.octop/octop.db`。仅 `octop provider test` 需要运行中的服务器，因为它会向提供商 API 发送实时 ping。
+</Note>
+
+---
+
+## `octop acp`
+
+将 Octop 专家暴露为 stdio JSON-RPC ACP 服务器。启动独立的 `OctopServer`（读取 `~/.octop/`）；**无需** `octop run` 正在运行。
+
+<CodeGroup>
+```bash 暴露默认专家
+octop acp
+```
+```bash 指定专家并启用调试日志
+octop acp --agent myagent --debug
+```
+</CodeGroup>
+
+### 选项
+
+| 选项 | 描述 |
+|---|---|
+| `--agent TEXT` | 要暴露的专家（默认：`OCTOP_AGENT` 或第一个专家） |
+| `--debug` | 将日志输出到 stderr |
 
 <Tip>
-  使用 `octop agent list --json` 可以得到机器可读的输出，便于在脚本中解析。
+  有关 Zed 配置示例和 runner 对象 schema，请参阅 [ACP IDE 集成](/zh/guides/acp-ide)。
 </Tip>

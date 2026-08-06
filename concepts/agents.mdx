@@ -12,95 +12,61 @@ When you create an agent, you configure the following attributes:
 
 | Attribute | Description |
 |---|---|
-| **Name** | A short identifier used in the CLI, dashboard, and channel routing |
+| **Name** | A short identifier used in the UI, CLI, and channel routing |
 | **Persona (MBTI)** | An optional personality profile that shapes the agent's communication style |
 | **Default model** | The LLM provider and model the agent uses (e.g. `openai:gpt-4o`) |
 | **System prompt** | Free-form instructions appended on top of the persona backbone in `SOUL.md` |
 | **Workspace backend** | Where the agent's files are stored — local disk, COS, S3, or another remote store |
 
 <Note>
-  Each agent maintains its own conversation history, channel connections, and cron jobs. Switching between agents in the dashboard or CLI does not mix their histories or settings.
+  Each agent maintains its own conversation history, channel connections, and cron jobs. Switching between agents in the web UI or CLI does not mix their histories or settings.
 </Note>
 
 ## Create an agent
 
-You can create an agent in three ways:
+Open the web UI at `http://127.0.0.1:8088` and go to **Agents**. The page has three tabs — **My agents**, **Built-in experts**, and **Expert market** — and a **Create from built-in expert** button that seeds a new agent from a template.
 
-<Steps>
-  <Step title="Via the web dashboard">
-    Open the dashboard at `http://127.0.0.1:8088`, navigate to **Agents**, and click **New Agent**. Fill in the name, choose an optional persona and default model, and click **Create**.
-  </Step>
-  <Step title="Via the CLI">
-    Run the following command in your terminal. The `--name` flag is required; all other flags are optional.
+<Frame>
+  ![Agents](/images/ui-agents.png "Agents")
+</Frame>
 
-    <CodeGroup>
-      ```bash Minimal
-      octop agent create --name myagent
-      ```
+`octop init` creates a default `main` agent so you can start chatting immediately.
 
-      ```bash With persona and model
-      octop agent create --name myagent --persona-mbti INTJ --model openai:gpt-4o
-      ```
-    </CodeGroup>
-  </Step>
-  <Step title="From an expert template">
-    Browse the bundled expert library and instantiate a template directly as a new agent. This pre-populates the agent's system prompt, skills, and other settings for a specific use case.
-
-    ```bash
-    # List available expert templates
-    octop agent experts
-
-    # Create an agent from a specific template
-    octop agent from-expert <expert_id>
-    ```
-  </Step>
-</Steps>
+<Tip>
+  For CLI create, list, start, stop, and reload commands, see [Agent commands](/cli/agent-commands).
+</Tip>
 
 ## Agent lifecycle
 
-Each agent has a runtime state that you can inspect and control from both the dashboard and the CLI.
+Each agent card shows its runtime state and carries a toggle to start and stop it, plus a reload control for picking up configuration changes.
 
 | State | Meaning |
 |---|---|
-| **Idle** | The agent is loaded but not currently processing a message |
-| **Running** | The agent is actively handling a request |
-| **Error** | The agent encountered a startup or runtime failure; check logs for details |
-
-Use the following CLI commands to control an agent's lifecycle:
-
-```bash
-# List all agents and their current state
-octop agent list
-
-# Start a specific agent
-octop agent start <agent_id>
-
-# Stop a specific agent
-octop agent stop <agent_id>
-
-# Reload an agent (picks up config changes without a full restart)
-octop agent reload <agent_id>
-```
-
-From the dashboard, use the **Start**, **Stop**, and **Reload** buttons on the agent detail page.
+| **Running** | The agent is loaded and handling requests |
+| **Stopped** | The agent is disabled and will not answer messages |
+| **Error** | The agent hit a startup or runtime failure; check logs for details |
 
 <Warning>
-  Stopping an agent terminates its active sessions on all connected IM channels. Any in-progress message will not receive a reply. Restart the agent to resume.
+  Stopping an agent terminates its active sessions on all connected channels. Any in-progress message will not receive a reply. Restart the agent to resume.
 </Warning>
+
+## Per-agent configuration
+
+Skills, sub-agents, personas, memory, and channels are all configured per agent under **Personalization**. Pick the agent at the top of the page, then switch between the tabs:
+
+| Tab | What it configures |
+|---|---|
+| **Skills** | Installed, built-in, and marketplace skills, plus skill packages |
+| **Sub-agents** | Helper agents this agent can delegate to |
+| **MBTI** | The persona that shapes tone and reasoning style |
+| **Memory** | What the agent retains across conversations |
+| **Channels** | Messaging platforms routed to this agent |
 
 ## Expert library
 
-Octop ships a bundled **expert library** — a collection of pre-configured agent templates for common use cases such as coding assistance, research, writing, and more. Octop scans the library at boot and makes every template available instantly.
+Octop ships a bundled **expert library** — pre-configured agent templates for coding, research, writing, and more. Experts are templates, not running agents. Instantiating an expert creates a new, independent agent seeded with that template's configuration.
 
-Experts are templates, not running agents. Instantiating an expert creates a new, independent agent seeded with that template's configuration. You can then customise the new agent however you like without affecting the template.
-
-```bash
-# See all available expert templates
-octop agent experts
-
-# Instantiate an expert as a new agent
-octop agent from-expert <expert_id>
-```
+Browse them under **Agents → Built-in experts** and **Agents → Expert market**, or see [Experts & Personas](/concepts/experts-personas).
 
 <Tip>
   Experts are a great starting point when you want a task-specialist agent. Pick the closest template, instantiate it, and then fine-tune the system prompt and skills rather than building from scratch.
@@ -113,6 +79,6 @@ octop agent from-expert <expert_id>
     Learn how MBTI personas shape agent behaviour and how to use the full expert template library.
   </Card>
   <Card title="Channels" icon="comments" href="/concepts/channels">
-    Connect your agent to Feishu, DingTalk, Discord, and other IM platforms.
+    Connect your agent to Feishu, WeCom, DingTalk, Telegram, and other messaging platforms.
   </Card>
 </CardGroup>

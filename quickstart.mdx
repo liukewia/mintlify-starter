@@ -1,10 +1,10 @@
 ---
 title: 'Get Started with Octop: Install and Run in Minutes'
 sidebarTitle: 'Quickstart'
-description: 'Install Octop on macOS, Linux, or Windows, run octop init to create your local database and admin account, then start chatting in minutes.'
+description: 'Install Octop on macOS, Linux, or Windows, run octop init, complete the first-run setup wizard, then start chatting in minutes.'
 ---
 
-Octop is a self-hosted, multi-user AI assistant platform that runs entirely on your own machine. In this guide, you will install the `octop` CLI, initialize the local database and admin account, start the server, and send your first message — all in under five minutes.
+Octop is a self-hosted, multi-user AI assistant platform that runs entirely on your own machine. In this guide, you will install the `octop` CLI, run `octop init`, start the server, complete the first-run setup wizard, and send your first message — all in under five minutes.
 
 <Steps>
 
@@ -60,19 +60,13 @@ Octop is a self-hosted, multi-user AI assistant platform that runs entirely on y
   </Step>
 
   <Step title="Initialize Octop">
-    Run the interactive setup wizard to bootstrap your local environment:
+    Bootstrap your local environment:
 
     ```bash
     octop init
     ```
 
-    The wizard walks you through three steps:
-
-    1. **Database** — creates a SQLite database at `~/.octop/octop.db`.
-    2. **JWT secret** — generates a 32-byte random secret at `~/.octop/secrets/jwt_secret`.
-    3. **Admin account** — prompts you to choose a username and password for the first administrator.
-
-    All data stays on your machine under `~/.octop/`.
+    This prepares `~/.octop/` (database, secrets, and related files). All data stays on your machine under `~/.octop/`.
   </Step>
 
   <Step title="Start the server">
@@ -88,16 +82,11 @@ Octop is a self-hosted, multi-user AI assistant platform that runs entirely on y
     http://127.0.0.1:8088
     ```
 
-    Log in with the default credentials:
+    On first launch the dashboard opens the **setup wizard**. Open `~/octop-login.txt` in your user home directory, copy the one-time setup password into the wizard, then choose your own admin username and password.
 
-    | Field | Default value |
-    |-------|--------------|
-    | Username | `admin` |
-    | Password | `octop` |
-
-    <Warning>
-      Change the default password immediately after your first login. Go to **Settings → Security** in the dashboard to update it.
-    </Warning>
+    <Note>
+      The file is `~/octop-login.txt` in the user home directory, not under `~/.octop/`. After setup completes, the file is removed and you sign in with the username and password you created.
+    </Note>
 
     To bind on all network interfaces or use a different port, pass flags directly:
 
@@ -113,33 +102,35 @@ Octop is a self-hosted, multi-user AI assistant platform that runs entirely on y
   </Step>
 
   <Step title="Configure a model provider">
-    Octop supports OpenAI-compatible APIs, DashScope (Qwen), Ollama, and more. Add your first provider using either the CLI or the dashboard.
+    Octop ships built-in presets for Tencent Cloud, OpenAI, Anthropic, DeepSeek, Ollama, and many more. Add your first provider from the web UI:
 
-    <CodeGroup>
-
-    ```bash CLI
-    octop models config
+    ```text
+    Management → Models
     ```
 
-    ```text Dashboard
-    Settings → Providers → Add Provider
-    ```
+    <Frame>
+      ![Model management](/images/ui-models.png "Model management")
+    </Frame>
 
-    </CodeGroup>
+    Pick a built-in preset, enter your API key, and enable it. Its models join the available model pool that every agent under your account can use.
 
-    Select a provider preset, enter your API key, and save. The provider becomes available to all agents you create under your account.
+    <Tip>
+      Prefer the terminal? Use `octop models config` — see [Agent commands](/cli/agent-commands#octop-models).
+    </Tip>
   </Step>
 
   <Step title="Start chatting">
-    Open the **Chat** section in the web dashboard at `http://127.0.0.1:8088`. Select your agent (a default `main` agent is created by `octop init`) and send your first message.
+    Open **Chat** in the web UI at `http://127.0.0.1:8088`. Select your agent (the setup wizard creates a default `main` agent) and send your first message.
 
-    You can also start a conversation directly from the terminal:
-
-    ```bash
-    octop chat
-    ```
+    <Frame>
+      ![Chat](/images/ui-chat.png "Chat")
+    </Frame>
 
     Your agent now has access to all the skills, connectors, and tools you configure going forward.
+
+    <Tip>
+      For an interactive terminal chat session, see [`octop chats`](/cli/agent-commands#octop-chats).
+    </Tip>
   </Step>
 
 </Steps>

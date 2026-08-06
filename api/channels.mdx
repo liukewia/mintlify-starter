@@ -1,10 +1,10 @@
 ---
 title: 'Channels API: Connect Agents to IM Platforms in Octop'
 sidebarTitle: 'Channels'
-description: 'Create, update, test, and delete IM channel connections for Octop agents. Endpoints for Feishu, DingTalk, Discord, WeCom, and more.'
+description: 'Create, update, test, and delete IM channel connections for Octop agents. Endpoints for Feishu, WeCom, DingTalk, Telegram, and more.'
 ---
 
-Use the Channels API to programmatically manage which IM platforms connect to each agent. Each channel links an agent to an external messaging service — such as Discord, Feishu, DingTalk, or WeCom — using platform-specific credentials stored in the channel's `config` object. All endpoints require owner-level access to the parent agent.
+Use the Channels API to programmatically manage which messaging platforms connect to each agent. Each channel links an agent to an external messaging service — such as Feishu, WeCom, DingTalk, or Telegram — using platform-specific credentials stored in the channel's `config` object. All endpoints require owner-level access to the parent agent.
 
 ## Base path
 
@@ -25,22 +25,9 @@ Use the Channels API to programmatically manage which IM platforms connect to ea
 
 ## Create a channel
 
-Provide a `kind`, a `name`, and a platform-specific `config` object. The example below creates a Discord bot channel.
+Provide a `kind`, a `name`, and a platform-specific `config` object.
 
 <CodeGroup>
-```bash Discord
-curl -X POST http://127.0.0.1:8088/api/agents/main/channels \
-  -H 'Authorization: Bearer $TOKEN' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "kind": "discord",
-    "name": "My Discord Bot",
-    "config": {
-      "token": "your-bot-token"
-    }
-  }'
-```
-
 ```bash Feishu
 curl -X POST http://127.0.0.1:8088/api/agents/main/channels \
   -H 'Authorization: Bearer $TOKEN' \
@@ -54,12 +41,39 @@ curl -X POST http://127.0.0.1:8088/api/agents/main/channels \
     }
   }'
 ```
+
+```bash Telegram
+curl -X POST http://127.0.0.1:8088/api/agents/main/channels \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "kind": "telegram",
+    "name": "Telegram Bot",
+    "config": {
+      "token": "your-bot-token"
+    }
+  }'
+```
 </CodeGroup>
 
 A successful request returns `201 Created` with the new channel row, including its assigned `id` (used as `{cid}` in subsequent calls).
 
+### Supported kinds
+
+| `kind` | Platform |
+|---|---|
+| `weixin` | WeChat |
+| `qq` | QQ |
+| `wecom` | WeCom |
+| `feishu` | Feishu |
+| `yuanbao` | Tencent Yuanbao |
+| `dingtalk` | DingTalk |
+| `telegram` | Telegram |
+| `xiaoyi` | Huawei Xiaoyi |
+| `mqtt` | MQTT |
+
 <Warning>
-  Octop validates the `kind` value against its registered channel builders. If you pass an unrecognised platform name, the server returns `400 CHANNEL_KIND_UNSUPPORTED`. Supported kinds include `discord`, `feishu`, `dingtalk`, `wecom`, `weixin`, and `yuanbao`, depending on your instance configuration.
+  Octop validates the `kind` value against its registered channel builders. If you pass an unrecognised platform name, the server returns `400 CHANNEL_KIND_UNSUPPORTED`.
 </Warning>
 
 ## Test a channel
@@ -90,7 +104,7 @@ Send a `PATCH` with only the fields you want to change — `name`, `config`, or 
 curl -X PATCH http://127.0.0.1:8088/api/agents/main/channels/ch_abc \
   -H 'Authorization: Bearer $TOKEN' \
   -H 'Content-Type: application/json' \
-  -d '{"name": "Production Discord Bot"}'
+  -d '{"name": "Production Feishu Bot"}'
 ```
 </CodeGroup>
 
@@ -117,7 +131,7 @@ curl -X POST http://127.0.0.1:8088/api/agents/main/channels/probe \
   -H 'Authorization: Bearer $TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
-    "kind": "discord",
+    "kind": "telegram",
     "config": {"token": "your-bot-token"}
   }'
 ```

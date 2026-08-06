@@ -1,28 +1,20 @@
 ---
 title: 'Browser Automation and Terminal AI Access in Octop'
 sidebarTitle: 'Browser & Terminal'
-description: 'Octop includes browser AI+ for web automation and screenshots, and terminal AI+ for AI-assisted command execution in the web dashboard.'
+description: 'The Octop workbench combines a remote browser and an AI-assisted terminal in one page, with a separate remote desktop for full host control.'
 ---
 
-Octop includes two advanced interfaces — **Browser AI+** for headless Chromium web automation, and **Terminal AI+** for shell access with AI assistance. Both are available directly in the web dashboard and extend what your agents can do beyond text conversations.
+Octop's **Workbench** puts a remote browser and an AI-assisted terminal side by side in the web UI, so you can watch and take over what an agent is doing in real time. A separate **Remote Desktop** page gives you control of the host's graphical desktop.
 
 ---
 
-## Browser AI+
+## Browser
 
-Browser AI+ gives your agents a real browser to work with. Under the hood it uses harness-browser, a CDP-based automation library with persistent profiles.
+The browser tab drives a real Chromium instance over CDP with persistent profiles, so agents can navigate, fill forms, and capture screenshots — and you can step in at any point.
 
-### What Browser AI+ can do
+### Enable the browser
 
-- Run headless Chromium sessions for web automation tasks
-- Take screenshots of any URL
-- Fill out forms, click buttons, and navigate web pages
-- Stream a live remote desktop view you can watch and control from the dashboard
-- Spin up an isolated desktop environment with one click on headless Linux servers (useful for GUI applications on cloud VMs)
-
-### Enable Browser AI+
-
-Browser AI+ requires the `browser` extra. Install it using the method that matches how you installed Octop:
+The browser requires the `browser` extra. Install it using the method that matches how you installed Octop:
 
 <CodeGroup>
 ```bash One-line installer (macOS / Linux)
@@ -34,9 +26,19 @@ pip install "octop[browser]"
 ```
 </CodeGroup>
 
-After installation, restart `octop run`. The browser skill becomes available to agents automatically.
+After installation, restart `octop run`, then open:
 
-### Use Browser AI+ in chat
+```text
+Workbench → Browser
+```
+
+Click **Check** to confirm the environment is ready, then **Launch browser** to start a session. Type a URL in the address bar to browse; bookmarks and the AI assistant are available alongside.
+
+<Frame>
+  ![Workbench browser](/images/ui-workbench.png "Workbench browser")
+</Frame>
+
+### Use the browser in chat
 
 Ask your agent to browse in plain language. For example:
 
@@ -44,36 +46,63 @@ Ask your agent to browse in plain language. For example:
 - *"Take a screenshot of https://example.com."*
 - *"Fill in the sign-up form at [URL] with these details…"*
 
-### Remote desktop
+---
 
-Open the **Remote Desktop** panel in the dashboard to view and control a live screen. This works on Linux, Windows, and macOS. On a headless Linux server, click **Launch Desktop** to create an isolated desktop session without needing a physical display.
+## Terminal
+
+The terminal tab embeds a full interactive shell in the browser, labelled **Terminal AI+**. You can open several tabs, run commands directly, and ask the agent to suggest commands, explain output, or diagnose errors — without leaving Octop.
+
+```text
+Workbench → Terminal
+```
+
+<Frame>
+  ![Workbench terminal](/images/ui-terminal.png "Workbench terminal")
+</Frame>
 
 ---
 
-## Terminal AI+
+## Remote desktop
 
-Terminal AI+ embeds an interactive shell session in your browser dashboard, so you can run commands and get AI assistance without switching to a separate terminal application.
+**Remote Desktop** streams and controls the Octop host's operating system desktop. Click **Check** to verify the environment, then **Connect** to start a session; from there you can click, drag, and type directly on the remote screen.
 
-### What Terminal AI+ can do
+<Frame>
+  ![Remote desktop](/images/ui-remote-desktop.png "Remote desktop")
+</Frame>
 
-- Open a full interactive shell session in the browser
-- Ask the agent to suggest commands, explain output, or diagnose errors
-- Run commands directly with AI guidance
+---
 
-### Shell guardrails
+## Guardrails
 
-Octop enforces user-editable allow and deny rules before executing shell commands. These rules live in:
+Because the browser and terminal give agents real reach into your machine, Octop centralises the safety controls under:
 
+```text
+Management → Security
 ```
-~/.octop/security/tool_guard/
-```
 
-Edit the files in that directory to control which commands your agents are permitted to run automatically and which require approval.
+<Frame>
+  ![Security](/images/ui-security.png "Security")
+</Frame>
 
-<Note>
-  Agents can be configured to require manual approval before running any shell command. Enable the **tool approval** setting in your agent's configuration to review every command before execution — this is the safest option for agents with broad access.
-</Note>
+The page is split into six tabs:
+
+| Tab | What it controls |
+|---|---|
+| **Tool approval** | Tools that pause before executing and wait for you to approve or reject them in the conversation |
+| **File access** | Which paths agents may read and write |
+| **Sensitive information** | Redaction of secrets and personal data |
+| **Command protection** | Allow and deny rules applied to shell commands |
+| **Skill scanning** | Checks run against skills before they are installed |
+| **Audit log** | A record of guarded actions |
+
+Tool approval ships enabled for the highest-risk tools — `bash`, `execute`, `write_file`, and `edit_file` — but the master **Enable manual tool approval** switch is off by default. Turn it on and any tool in that list pauses for your confirmation before it runs.
+
+Saving applies every tab at once, and running agents reload automatically afterwards.
 
 <Warning>
-  Review the allow/deny rules in `~/.octop/security/tool_guard/` before enabling shell access in a production environment. Overly permissive rules could allow an agent to run destructive or unintended commands. Start with a restrictive allowlist and expand it only as needed.
+  Review command protection and file access rules before giving agents shell access in a production environment. Overly permissive rules could allow an agent to run destructive commands. Start restrictive and expand only as needed.
 </Warning>
+
+<Tip>
+  To enable or disable skills from the CLI, see [`octop skills`](/cli/agent-commands#octop-skills).
+</Tip>

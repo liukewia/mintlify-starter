@@ -67,12 +67,8 @@ For persistent overrides, add the `export OCTOP_HOME=…` line to your shell pro
 
 ## Back up and restore
 
-Everything Octop needs is in `~/.octop/`, which makes backups straightforward:
-
-```bash
-octop backup create
-```
+Everything Octop needs is in `~/.octop/`, which makes backups straightforward. Use `octop backup create` / `octop backup restore` — see [Backup commands](/cli/channel-cron-commands#octop-backup).
 
 <Tip>
-Schedule `octop backup create` as a cron job so you always have a recent snapshot. The backup archive includes `config.json`, the SQLite database, `cli_state.json`, secrets, agent workspaces, and installed plugins — everything required to restore a fully working instance on a fresh machine.
+Schedule regular backups so you always have a recent snapshot. The archive includes `config.json`, the SQLite database, `cli_state.json`, secrets, agent workspaces, and installed plugins — everything required to restore a fully working instance on a fresh machine.
 </Tip>

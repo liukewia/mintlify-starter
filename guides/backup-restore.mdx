@@ -15,64 +15,30 @@ Octop's backup command exports everything — the SQLite database, agent workspa
 | Config | `~/.octop/config.json` | Server settings and feature flags |
 | Secrets | `~/.octop/secrets/` | JWT secret and channel tokens (included optionally) |
 
-## Create a backup
+## Create and restore
 
-<CodeGroup>
-```bash Create a backup archive
-octop backup create
-# Output: octop-backup-2025-01-15.tar.gz (or similar timestamped filename)
-```
-</CodeGroup>
+Use the CLI:
 
-The archive is written to your current working directory. Move it to a safe location — external storage, a cloud bucket, or another machine.
+- `octop backup create` — create a backup archive
+- `octop backup restore <archive>` — restore an archive into `~/.octop`
 
-## Restore a backup
-
-<CodeGroup>
-```bash Restore from an archive
-octop backup restore octop-backup-2025-01-15.tar.gz
-```
-</CodeGroup>
+Full options and examples are in [Channel & cron commands: backup](/cli/channel-cron-commands#octop-backup).
 
 <Warning>
-  Restoring overwrites the entire `~/.octop/` directory. Before you run `octop backup restore`, create a fresh backup of the current state so you can roll back if needed:
-
-  ```bash
-  octop backup create   # save current state first
-  octop backup restore octop-backup-2025-01-15.tar.gz
-  ```
+  Restoring overwrites the entire `~/.octop/` directory. Create a fresh backup of the current state before you restore, so you can roll back if needed.
 </Warning>
 
 ## Back up a Docker deployment
 
 If you run Octop in Docker, the data lives in the mounted volume (typically `octop-data:/data/.octop`). Two approaches work well:
 
-1. **Run the backup command inside the container:**
-   ```bash
-   docker exec <container_name> octop backup create
-   ```
-   Then copy the archive out with `docker cp`.
-
+1. **Run the backup command inside the container**, then copy the archive out with `docker cp`.
 2. **Copy the volume directory directly** from the host (when the container is stopped) using standard filesystem tools.
 
 ## Keep Octop up to date
 
-<CodeGroup>
-```bash Check and install the latest version
-octop update
-```
-
-```bash Check for updates without installing
-octop update --check
-```
-</CodeGroup>
+Use `octop update` / `octop update --check` to install or check for newer releases. See [Server commands](/cli/server-commands#octop-update).
 
 <Tip>
-  Schedule regular backups with a host-level cron job so you always have a recent snapshot. For example, add the following to your system crontab to back up every day at 2 AM:
-
-  ```bash
-  0 2 * * * /path/to/octop backup create
-  ```
-
-  Pair this with a rotation script to avoid accumulating too many archives.
+  Schedule regular backups with a host-level cron job (for example daily at 2 AM) so you always have a recent snapshot. Pair this with a rotation script to avoid accumulating too many archives.
 </Tip>

@@ -25,7 +25,7 @@ Use this mode when you want your IDE to treat your Octop agent as its AI backend
 
 <Steps>
   <Step title="Ensure your agent has a model configured">
-    Open **Dashboard → Agents**, select your agent, and confirm a provider and model are set. `octop acp` boots the agent standalone — it must start successfully.
+    Open **Agents**, select your agent, and confirm a provider and model are set. `octop acp` boots the agent standalone — it must start successfully.
   </Step>
   <Step title="Start the ACP server">
     Run the following in your terminal. This command is standalone and does **not** require `octop run` to be running:
@@ -92,14 +92,18 @@ Use this mode when you want your Octop agent to hand off coding tasks to a speci
     npx -y @zed-industries/codex-acp
     ```
   </Step>
-  <Step title="Open the ACP dashboard">
-    In the web dashboard, navigate to **ACP** (`/acp`) in the sidebar.
+  <Step title="Open the ACP page">
+    In the web UI, navigate to **ACP** (`/acp`) in the sidebar.
   </Step>
   <Step title="Enable the runners you want">
-    Toggle on the runner cards for OpenCode, CodeBuddy, Claude Code, Codex, or any custom runner you have added.
+    Toggle on the runner cards for OpenCode, CodeBuddy, Claude Code, Codex, or any custom runner you have added. Runner configuration is shared across every agent on the account.
+
+    <Frame>
+      ![ACP runners](/images/ui-acp.png "ACP runners")
+    </Frame>
   </Step>
   <Step title="Enable the acp_runner tool for your agent">
-    Switch to your agent in the top bar and turn on **Enable acp_runner tool** in the agent settings. This toggle is per-agent.
+    Select your agent in the top bar, then turn on **Enable ACP Runner tool** at the bottom of the same page. Unlike runner configuration, this toggle applies per agent.
   </Step>
   <Step title="Delegate in chat">
     In chat, ask your agent to use `acp_runner` — for example, *"Use acp_runner with opencode to find the README and summarise it."* Your agent handles the session lifecycle and surfaces any permission prompts inline.
@@ -141,7 +145,7 @@ Permission prompts from the external tool appear inline in chat. You can pick an
 ## Troubleshooting
 
 <Accordion title="octop acp fails immediately">
-  The agent is not running or the `--agent` value is invalid. Open the dashboard, confirm the agent exists, and start it before running `octop acp`.
+  The agent is not running or the `--agent` value is invalid. Open the web UI, confirm the agent exists, and start it before running `octop acp`.
 </Accordion>
 
 <Accordion title="Runner start fails with 'Unknown runner'">

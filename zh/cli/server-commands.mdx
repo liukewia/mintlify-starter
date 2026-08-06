@@ -1,57 +1,219 @@
 ---
-title: "Octop 服务器命令：init、run、service 与 update"
-sidebarTitle: "服务器命令"
-description: "引导新安装，在前台启动服务器，将其管理为系统服务，并将 Octop 升级到最新发布版本。"
+title: 'Octop 服务器命令：init、run、service 与 update'
+sidebarTitle: '服务器命令'
+description: '引导新安装，在前台启动服务器，将其管理为系统服务，并将 Octop 升级到最新发布版本。'
 ---
 
-用于引导新安装、前台启动服务器、将其作为系统服务管理，以及升级到最新 Octop 版本。
+这些命令控制 Octop 服务器生命周期——引导全新安装、启动服务器进程、注册为系统服务并保持最新。首次设置 Octop 时请按顺序运行；后续部署管理或升级时也会用到它们。
 
 ## `octop init`
 
-运行交互式设置向导，创建本地数据库、生成 JWT 密钥并设置管理员账户。
+引导 `~/.octop/`，创建 SQLite 数据库、JWT 密钥和首个管理员账户。首次启动服务器前运行一次即可。
 
-```bash
+<CodeGroup>
+```bash 交互式设置
 octop init
 ```
+```bash 非交互式设置
+octop init --admin-username admin --admin-password mypassword --yes
+```
+</CodeGroup>
 
-| 选项 | 描述 |
-| --- | --- |
-| `--force` | 重新初始化，覆盖已有数据库 |
-| `--non-interactive` | 跳过向导，使用默认值 |
+### 选项
+
+| 选项 | 环境变量 | 描述 |
+|---|---|---|
+| `--admin-username TEXT` | `OCTOP_ADMIN_USERNAME` | 首个管理员账户的用户名 |
+| `--admin-password TEXT` | `OCTOP_ADMIN_PASSWORD` | 首个管理员账户的密码 |
+| `--admin-display-name TEXT` | `OCTOP_ADMIN_DISPLAY_NAME` | 首个管理员账户的显示名称 |
+| `--force` | — | 引导前清空已有 `~/.octop/` 内容 |
+| `--yes` | — | 跳过所有交互式提示 |
+
+<Note>
+  `octop init` 对数据库是幂等的——在已有安装上再次运行是安全的，只会应用缺失的迁移。使用 `--force` 可清空 `~/.octop/` 并完全重新开始。
+</Note>
+
+---
 
 ## `octop run`
 
-在前台启动 Octop 服务器。
+使用 uvicorn 在前台启动 Octop 服务器。单进程同时提供 Web 控制台、HTTP/SSE API 和 IM 渠道监听。
 
-```bash
-octop run [--host 0.0.0.0] [--port 9000]
+<CodeGroup>
+```bash 默认
+octop run
 ```
+```bash 自定义主机与端口
+octop run --host 0.0.0.0 --port 8088
+```
+```bash 使用自签名证书的 HTTPS
+octop run --ssl
+```
+```bash 使用自有证书的 HTTPS
+octop run --ssl --certfile /path/cert.pem --keyfile /path/key.pem
+```
+</CodeGroup>
 
-| 选项 | 描述 |
-| --- | --- |
-| `--host` | 绑定的网络接口（默认 `127.0.0.1`） |
-| `--port` | 监听端口（默认 `8088`） |
+### 选项
+
+| 选项 | 默认值 | 描述 |
+|---|---|---|
+| `--host TEXT` | `127.0.0.1` | 绑定主机（覆盖 `OCTOP_BIND_HOST`） |
+| `--port INTEGER` | `8088` | 监听端口（覆盖 `OCTOP_PORT`） |
+| `--reload / --no-reload` | 关闭 | 启用 uvicorn 自动重载（仅开发环境） |
+| `--ssl / --no-ssl` | 关闭 | 启用 HTTPS |
+| `--certfile PATH` | — | PEM 格式 TLS 证书 |
+| `--keyfile PATH` | — | PEM 格式 TLS 私钥 |
+| `--log-level` | `info` | 可选：`debug`、`info`、`warning`、`error` |
+
+<Warning>
+  生产环境请勿使用 `--reload`。自动重载会在文件变更时重启进程，仅用于本地开发。
+</Warning>
+
+---
 
 ## `octop service`
 
-将 Octop 作为系统服务管理。
+将 Octop 注册为系统服务，以便开机自启并在后台运行。
 
-```bash
+<CodeGroup>
+```bash 启动（若未安装则先安装）
 octop service start
-octop service stop
-octop service restart
-octop service status
-octop service uninstall
 ```
+```bash 停止
+octop service stop
+```
+```bash 重启
+octop service restart
+```
+```bash 检查状态与健康
+octop service status
+```
+</CodeGroup>
+
+<Note>
+  `octop service` 会自动检测平台：Linux 使用 **systemd**，macOS 使用 **launchd**。`status` 子命令会探测 HTTP 健康端点，失败时打印日志提示。可通过 `--scope user` 或 `--scope system`（或 `OCTOP_SERVICE_SCOPE`）强制作用域。
+</Note>
+
+---
 
 ## `octop update`
 
-将 Octop 升级到最新发布版本。
+检查 PyPI 上是否有更新的 Octop 版本并自动安装。
 
-```bash
+<CodeGroup>
+```bash 检查并安装
 octop update
 ```
+```bash 仅检查，不安装
+octop update --check
+```
+</CodeGroup>
 
-<Note>
-  升级前会自动备份您的数据库。升级完成后需要重启服务器才能使新版本生效：`octop service restart`。
-</Note>
+### 选项
+
+| 选项 | 描述 |
+|---|---|
+| `--check / --no-check` | 仅报告可用版本，不安装 |
+| `--channel TEXT` | 检查渠道：`pypi`（默认）、`testpypi` 或自定义索引 URL |
+
+---
+
+## `octop user login`
+
+通过凭据换取 JWT，将 CLI 附加到正在运行的服务器。令牌写入 `~/.octop/cli_state.json`，Attach 模式命令（如 `channel test`、`models ollama-*` 等）无需重复认证即可访问服务器。
+
+<CodeGroup>
+```bash 以管理员身份登录
+octop user login --username admin
+```
+</CodeGroup>
+
+登录成功后，JWT 会写入 `~/.octop/cli_state.json`。删除该文件或运行 `octop clean --state` 即可退出登录。
+
+<Tip>
+  其他 `octop user` 子命令（`create`、`list`、`passwd`、`role`、`disable`、`delete`）直接操作本地 SQLite 数据库，无需运行中的服务器或事先登录。
+</Tip>
+
+---
+
+## `octop clean`
+
+重置 CLI 状态或清空整个 `~/.octop/` 目录。**具有破坏性**——运行前请仔细阅读帮助。
+
+<CodeGroup>
+```bash 仅清除 CLI 状态（保留数据）
+octop clean --state
+```
+```bash 清空整个 ~/.octop/ 目录
+octop clean --all
+```
+```bash 跳过确认提示
+octop clean --all --yes
+```
+</CodeGroup>
+
+### 选项
+
+| 选项 | 描述 |
+|---|---|
+| `--state / --all` | 要清除的内容：`--state` 仅 CLI 状态；`--all` 清空整个 `~/.octop/` |
+| `--yes` | 跳过确认提示 |
+
+<Warning>
+  `octop clean --all` 会删除数据库、工作区和所有配置。操作前请确保已运行 `octop backup create`。
+</Warning>
+
+---
+
+## `octop config`
+
+查看或编辑 `~/.octop/cli_state.json`（默认基础 URL、用户、专家）。
+
+<CodeGroup>
+```bash 查看当前 CLI 状态
+octop config show
+```
+```bash 固定默认 --user
+octop config set-user admin
+```
+</CodeGroup>
+
+### 子命令
+
+| 子命令 | 描述 |
+|---|---|
+| `show` | 打印当前 CLI 状态 |
+| `set-user` | 固定默认 `--user` |
+
+---
+
+## `octop completion`
+
+生成并安装 Shell 命令补全。
+
+<CodeGroup>
+```bash 输出 bash 补全脚本
+octop completion show bash
+```
+```bash 输出 zsh 补全脚本
+octop completion show zsh
+```
+```bash 安装到 ~/.zshrc 或 ~/.bashrc
+octop completion install
+```
+</CodeGroup>
+
+<Tip>
+  运行 `octop completion install` 后，重新打开终端或执行 `source ~/.zshrc`（或 `source ~/.bashrc`）即可启用补全。
+</Tip>
+
+---
+
+## `octop version`
+
+打印已安装的 octop 版本。与全局选项 `-v, --version` 等效。
+
+```bash
+octop version
+```

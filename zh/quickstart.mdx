@@ -1,10 +1,10 @@
 ---
 title: "Octop 快速入门：几分钟内完成安装与运行"
 sidebarTitle: "快速开始"
-description: "在 macOS、Linux 或 Windows 上安装 Octop，运行 octop init 创建本地数据库和管理员账户，然后在几分钟内开始聊天。"
+description: "在 macOS、Linux 或 Windows 上安装 Octop，运行 octop init，完成首次设置向导，然后在几分钟内开始聊天。"
 ---
 
-Octop 是一个自托管的多用户 AI 助手平台，完全运行在您自己的机器上。在本指南中，您将安装 `octop` CLI，初始化本地数据库和管理员账户，启动服务器，并发送第一条消息——整个过程不到五分钟。
+Octop 是一个自托管的多用户 AI 助手平台，完全运行在您自己的机器上。在本指南中，您将安装 `octop` CLI，运行 `octop init`，启动服务器，完成首次设置向导，并发送第一条消息——整个过程不到五分钟。
 
 <Steps>
   <Step title="安装 Octop">
@@ -57,19 +57,13 @@ Octop 是一个自托管的多用户 AI 助手平台，完全运行在您自己�
     ```
   </Step>
   <Step title="初始化 Octop">
-    运行交互式设置向导来引导配置您的本地环境：
+    初始化本地环境：
 
     ```bash
     octop init
     ```
 
-    该向导会引导您完成三个步骤：
-
-    1. **数据库** — 在 `~/.octop/octop.db` 处创建 SQLite 数据库。
-    2. **JWT 密钥** — 在 `~/.octop/secrets/jwt_secret` 处生成 32 字节随机密钥。
-    3. **管理员账户** — 提示您为第一位管理员设置用户名和密码。
-
-    所有数据都保留在您机器的 `~/.octop/` 目录下。
+    这会准备好 `~/.octop/`（数据库、密钥等相关文件）。所有数据都保留在您机器的 `~/.octop/` 目录下。
   </Step>
   <Step title="启动服务器">
     在前台启动 Octop：
@@ -84,16 +78,11 @@ Octop 是一个自托管的多用户 AI 助手平台，完全运行在您自己�
     http://127.0.0.1:8088
     ```
 
-    使用默认凭证登录：
+    首次启动时，页面会进入**设置向导**。请先到用户主目录打开 `~/octop-login.txt`，将其中的一次性设置密码粘贴到向导中，然后自行设置管理员用户名和密码。
 
-    | 字段 | 默认值 |
-    | --- | --- |
-    | 用户名 | `admin` |
-    | 密码 | `octop` |
-
-    <Warning>
-      首次登录后请立即更改默认密码。在仪表板的**设置 → 安全**中进行更新。
-    </Warning>
+    <Note>
+      该文件位于用户主目录的 `~/octop-login.txt`，不在 `~/.octop/` 下。设置完成后文件会被删除，之后请使用您自设的用户名和密码登录。
+    </Note>
 
     如需绑定所有网络接口或使用不同端口，直接传递参数即可：
 
@@ -108,36 +97,34 @@ Octop 是一个自托管的多用户 AI 助手平台，完全运行在您自己�
     ```
   </Step>
   <Step title="配置模型提供商">
-    Octop 支持 OpenAI 兼容 API、DashScope（通义千问）、Ollama 等。通过 CLI 或仪表板添加您的第一个提供商。
+    Octop 内置了腾讯云、OpenAI、Anthropic、DeepSeek、Ollama 等大量预设。在页面中添加您的第一个提供商：
 
-    <CodeGroup>
-
-    ```bash CLI
-    octop models config
+    ```text
+    管理 → 模型
     ```
-
-    ```text 页面
-    设置 → 提供商 → 添加提供商
-    ```
-
-    </CodeGroup>
 
     <Frame>
-      ![Add Provider](/images/add-provider.png "Add Provider")
+      ![模型管理](/images/ui-models.png "模型管理")
     </Frame>
 
-    选择一个提供商预设，输入您的 API 密钥并保存。该提供商将可供您账户下创建的所有专家使用。
+    选择一个预置提供商，填入 API 密钥并启用。它的模型会进入可用模型池，供您账户下的所有专家使用。
+
+    <Tip>
+      更习惯终端？使用 `octop models config`——详见 [专家命令](/zh/cli/agent-commands#octop-models)。
+    </Tip>
   </Step>
   <Step title="开始聊天">
-    打开 Web 仪表板的**聊天**部分，地址为 `http://127.0.0.1:8088`。选择您的专家（`octop init` 会创建一个默认的 `main` 专家）并发送第一条消息。
+    打开页面的**聊天**，地址为 `http://127.0.0.1:8088`。选择您的专家（设置向导会创建一个默认的 `main` 专家）并发送第一条消息。
 
-    您也可以直接从终端开始对话：
-
-    ```bash
-    octop chat
-    ```
+    <Frame>
+      ![聊天](/images/ui-chat.png "聊天")
+    </Frame>
 
     从现在开始，您的专家将能够使用您配置的所有技能、连接器和工具。
+
+    <Tip>
+      终端交互式聊天见 [`octop chats`](/zh/cli/agent-commands#octop-chats)。
+    </Tip>
   </Step>
 </Steps>
 
